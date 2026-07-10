@@ -1,0 +1,152 @@
+<form method="post" action="/settings/general" class="space-y-6" enctype="multipart/form-data">
+  <!-- Company Information -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400">
+          <i class="fa-solid fa-building text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Company Information</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Basic company identity and contact details</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2">
+          <label class="label">Company Name <span class="text-rose-500">*</span></label>
+          <input name="companyName" value="<%= settings.companyName || '' %>" class="input" required placeholder="Acme Corporation" />
+        </div>
+        <div>
+          <label class="label">Tax Number</label>
+          <input name="taxNumber" value="<%= settings.taxNumber || '' %>" class="input" placeholder="TIN-0000123" />
+        </div>
+        <div>
+          <label class="label">Registration Number</label>
+          <input name="registrationNumber" value="<%= settings.registrationNumber || '' %>" class="input" placeholder="REG-2024-001" />
+        </div>
+        <div>
+          <label class="label">Email</label>
+          <input type="email" name="companyEmail" value="<%= settings.companyEmail || '' %>" class="input" placeholder="info@company.com" />
+        </div>
+        <div>
+          <label class="label">Phone</label>
+          <input name="companyPhone" value="<%= settings.companyPhone || '' %>" class="input" placeholder="+93 ..." />
+        </div>
+        <div>
+          <label class="label">Website</label>
+          <input name="website" value="<%= settings.website || '' %>" class="input" placeholder="https://company.com" />
+        </div>
+        <div class="lg:col-span-2">
+          <label class="label">Address</label>
+          <input name="address" value="<%= settings.address || '' %>" class="input" placeholder="Street, District" />
+        </div>
+        <div>
+          <label class="label">City</label>
+          <input name="city" value="<%= settings.city || '' %>" class="input" />
+        </div>
+        <div>
+          <label class="label">Province / State</label>
+          <input name="province" value="<%= settings.province || '' %>" class="input" />
+        </div>
+        <div>
+          <label class="label">Country</label>
+          <input name="country" value="<%= settings.country || '' %>" class="input" />
+        </div>
+        <div class="sm:col-span-2 lg:col-span-3">
+          <label class="label">Company Logo</label>
+          <div class="flex items-center gap-4">
+            <input type="file" name="companyLogo" accept="image/*" class="input flex-1" />
+            <% if (settings.companyLogo) { %>
+              <a href="<%= settings.companyLogo %>" target="_blank" class="btn-secondary btn-sm shrink-0"><i class="fa-solid fa-eye"></i> View</a>
+            <% } %>
+          </div>
+          <p class="help-text">PNG, JPG or SVG. Recommended size: 200×200px.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Localization & Format -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center text-sky-600 dark:text-sky-400">
+          <i class="fa-solid fa-globe text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Localization &amp; Format</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Currency, timezone, date and number formats</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div>
+          <label class="label">Currency Code</label>
+          <input name="currency" value="<%= settings.currency || 'AFN' %>" class="input" placeholder="AFN" />
+        </div>
+        <div>
+          <label class="label">Currency Symbol</label>
+          <input name="currencySymbol" value="<%= settings.currencySymbol || '؋' %>" class="input" />
+        </div>
+        <div>
+          <label class="label">Time Zone</label>
+          <select name="timeZone" class="input">
+            <% ['Asia/Kabul','Asia/Dubai','Asia/Karachi','Asia/Tehran','Asia/Tashkent','UTC','America/New_York','Europe/London'].forEach(function(tz){ %>
+              <option value="<%= tz %>" <%= settings.timeZone===tz?'selected':'' %>><%= tz %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Date Format</label>
+          <select name="dateFormat" class="input">
+            <% ['YYYY-MM-DD','DD/MM/YYYY','MM/DD/YYYY','DD-MMM-YYYY'].forEach(function(f){ %>
+              <option value="<%= f %>" <%= settings.dateFormat===f?'selected':'' %>><%= f %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Time Format</label>
+          <select name="timeFormat" class="input">
+            <option value="24h" <%= settings.timeFormat==='24h'?'selected':'' %>>24-hour (14:30)</option>
+            <option value="12h" <%= settings.timeFormat==='12h'?'selected':'' %>>12-hour (2:30 PM)</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Number Format</label>
+          <select name="numberFormat" class="input">
+            <% ['en-US','en-GB','fa-AF','de-DE','fr-FR'].forEach(function(f){ %>
+              <option value="<%= f %>" <%= settings.numberFormat===f?'selected':'' %>><%= f %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Fiscal Year</label>
+          <select name="fiscalYear" class="input">
+            <% ['Jan-Dec','Apr-Mar','Jul-Jun','Sep-Aug'].forEach(function(f){ %>
+              <option value="<%= f %>" <%= settings.fiscalYear===f?'selected':'' %>><%= f %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Business Hours</label>
+          <input name="businessHours" value="<%= settings.businessHours || '09:00-17:00' %>" class="input" placeholder="09:00-17:00" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky action bar -->
+  <div class="sticky bottom-4 z-10 no-print">
+    <div class="card shadow-xl">
+      <div class="card-body p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+          <i class="fa-solid fa-circle-info text-brand-500"></i>
+          <span>Changes apply system-wide after saving.</span>
+        </div>
+        <div class="flex gap-3">
+          <a href="/settings/general" class="btn-secondary"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

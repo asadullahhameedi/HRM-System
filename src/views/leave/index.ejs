@@ -1,0 +1,200 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+          <a href="/dashboard" class="hover:text-brand-600">Dashboard</a>
+          <i class="fa-solid fa-chevron-right text-[8px]"></i>
+          <span class="text-slate-700 dark:text-slate-300 font-medium">Leave Requests</span>
+        </div>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Leave Requests</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400"><%= pagination.total %> total requests</p>
+      </div>
+      <div class="flex gap-2 no-print">
+        <button onclick="HRM_Print.printPage()" class="btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</button>
+        <button class="btn-primary btn-sm" data-modal-open="leave-modal" data-modal-title="Apply Leave"><i class="fa-solid fa-plus"></i> Apply Leave</button>
+      </div>
+    </div>
+
+    <div class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <% if (leaves.length) { %>
+          <table class="table-clean">
+            <thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Reviewed By</th><th class="text-right">Actions</th></tr></thead>
+            <tbody>
+              <% leaves.forEach(function(l) { %>
+                <tr>
+                  <td><div class="font-medium"><%= l.employee ? l.employee.firstName+' '+l.employee.lastName : '—' %></div><div class="text-xs text-slate-500"><%= l.employee ? l.employee.employeeId : '' %></div></td>
+                  <td><span class="badge-info"><%= l.leaveType ? l.leaveType.name : 'Leave' %></span></td>
+                  <td class="text-sm"><%= new Date(l.fromDate).toLocaleDateString() %></td>
+                  <td class="text-sm"><%= new Date(l.toDate).toLocaleDateString() %></td>
+                  <td class="text-sm font-medium"><%= l.days %></td>
+                  <td class="text-sm text-slate-500 max-w-xs truncate" title="<%= l.reason %>"><%= l.reason %></td>
+                  <td><% var sc={pending:'badge-warning',approved:'badge-success',rejected:'badge-danger',cancelled:'badge-muted'}[l.status]; %><span class="<%= sc %> capitalize"><%= l.status %></span></td>
+                  <td class="text-xs text-slate-500"><% if (l.reviewedBy) { %><div><%= l.reviewedBy.name || l.reviewedBy.email || '—' %></div><% if (l.reviewedAt) { %><div class="text-[10px]"><%= new Date(l.reviewedAt).toLocaleDateString() %></div><% } %><% if (l.reviewRemarks) { %><div class="text-[10px] italic mt-0.5" title="<%= l.reviewRemarks %>"><%= l.reviewRemarks %></div><% } %><% } else { %>—<% } %></td>
+                  <td class="text-right">
+                    <% if (['admin','hr','manager'].indexOf(user.role) !== -1) { %>
+                      <% if (l.status === 'pending') { %>
+                        <button class="btn-icon btn-ghost btn-sm text-emerald-600" data-modal-open="review-modal" data-modal-id="<%= l._id %>" data-modal-action="approved" data-modal-employee-name="<%= l.employee ? l.employee.firstName+' '+l.employee.lastName : '' %>" data-modal-from="<%= l.fromDate ? new Date(l.fromDate).toLocaleDateString() : '' %>" data-modal-to="<%= l.toDate ? new Date(l.toDate).toLocaleDateString() : '' %>" data-modal-days="<%= l.days %>" data-modal-reason="<%= l.reason || '' %>" title="Approve"><i class="fa-solid fa-check"></i></button>
+                        <button class="btn-icon btn-ghost btn-sm text-rose-600" data-modal-open="review-modal" data-modal-id="<%= l._id %>" data-modal-action="rejected" data-modal-employee-name="<%= l.employee ? l.employee.firstName+' '+l.employee.lastName : '' %>" data-modal-from="<%= l.fromDate ? new Date(l.fromDate).toLocaleDateString() : '' %>" data-modal-to="<%= l.toDate ? new Date(l.toDate).toLocaleDateString() : '' %>" data-modal-days="<%= l.days %>" data-modal-reason="<%= l.reason || '' %>" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                      <% } else if (l.status === 'approved') { %>
+                        <button class="btn-icon btn-ghost btn-sm text-rose-600" data-modal-open="review-modal" data-modal-id="<%= l._id %>" data-modal-action="rejected" data-modal-employee-name="<%= l.employee ? l.employee.firstName+' '+l.employee.lastName : '' %>" data-modal-from="<%= l.fromDate ? new Date(l.fromDate).toLocaleDateString() : '' %>" data-modal-to="<%= l.toDate ? new Date(l.toDate).toLocaleDateString() : '' %>" data-modal-days="<%= l.days %>" data-modal-reason="<%= l.reason || '' %>" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                      <% } else if (l.status === 'rejected') { %>
+                        <button class="btn-icon btn-ghost btn-sm text-emerald-600" data-modal-open="review-modal" data-modal-id="<%= l._id %>" data-modal-action="approved" data-modal-employee-name="<%= l.employee ? l.employee.firstName+' '+l.employee.lastName : '' %>" data-modal-from="<%= l.fromDate ? new Date(l.fromDate).toLocaleDateString() : '' %>" data-modal-to="<%= l.toDate ? new Date(l.toDate).toLocaleDateString() : '' %>" data-modal-days="<%= l.days %>" data-modal-reason="<%= l.reason || '' %>" title="Approve"><i class="fa-solid fa-check"></i></button>
+                      <% } %>
+                    <% } %>
+                    <button class="btn-icon btn-ghost btn-sm" data-modal-open="leave-edit-modal" data-modal-id="<%= l._id %>" data-modal-employee="<%= l.employee ? l.employee._id : '' %>" data-modal-employee-name="<%= l.employee ? l.employee.firstName+' '+l.employee.lastName : '' %>" data-modal-leavetype="<%= l.leaveType ? l.leaveType._id : '' %>" data-modal-from="<%= l.fromDate ? new Date(l.fromDate).toISOString().slice(0,10) : '' %>" data-modal-to="<%= l.toDate ? new Date(l.toDate).toISOString().slice(0,10) : '' %>" data-modal-reason="<%= l.reason || '' %>" data-modal-status="<%= l.status %>" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                    <form method="post" action="/leave/<%= l._id %>?_method=DELETE" class="inline" onsubmit="return confirm('Delete this leave request?')"><button class="btn-icon btn-ghost btn-sm text-rose-600" title="Delete"><i class="fa-solid fa-trash"></i></button></form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="text-center py-20">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fa-regular fa-calendar-check text-2xl text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300">No leave requests</h3>
+            <p class="text-sm text-slate-400 mt-1 mb-4">Leave requests will appear here.</p>
+            <button class="btn-primary btn-sm inline-flex" data-modal-open="leave-modal" data-modal-title="Apply Leave"><i class="fa-solid fa-plus"></i> Apply Leave</button>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <%- include('../partials/pagination', { pagination, query: filters }) %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+
+<div id="leave-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Apply Leave</h3>
+    <form method="post" action="/leave" class="space-y-3">
+      <div><label class="label">Employee *</label><select name="employee" class="input" required><option value="">Select</option><% employees.forEach(function(e){ %><option value="<%= e._id %>" <%= (user.employee && user.employee==e._id)?'selected':'' %>><%= e.employeeId %> · <%= e.firstName %> <%= e.lastName %></option><% }) %></select></div>
+      <div><label class="label">Leave Type *</label><select name="leaveType" class="input" required><option value="">Select</option><% leaveTypes.forEach(function(t){ %><option value="<%= t._id %>"><%= t.name %></option><% }) %></select></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="label">From *</label><input type="date" name="fromDate" class="input" required /></div>
+        <div><label class="label">To *</label><input type="date" name="toDate" class="input" required /></div>
+      </div>
+      <div><label class="label">Duration</label><select name="duration" class="input"><option value="full-day">Full Day</option><option value="half-day">Half Day</option></select></div>
+      <div><label class="label">Reason *</label><textarea name="reason" class="input" rows="2" required></textarea></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button class="btn-primary">Submit</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="review-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in">
+    <h3 class="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-100" id="review-modal-title">Review Leave Request</h3>
+    <!-- Leave Details Summary -->
+    <div class="mb-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-2 text-sm">
+      <div class="flex justify-between"><span class="text-slate-500">Employee</span><span id="review-employee-name" class="font-medium"></span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Dates</span><span id="review-dates"></span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Days</span><span id="review-days" class="font-medium"></span></div>
+      <div class="flex justify-between"><span class="text-slate-500">Reason</span><span id="review-reason" class="text-right max-w-[60%] truncate"></span></div>
+    </div>
+    <form method="post" action="" id="review-form" class="space-y-3">
+      <input type="hidden" name="status" id="review-status" />
+      <div><label class="label">Remarks / Comments</label><textarea name="reviewRemarks" id="review-remarks" class="input" rows="3" placeholder="Add remarks for this decision..."></textarea></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button type="submit" class="btn-primary" id="review-submit-btn">Confirm</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- Leave Edit Modal -->
+<div id="leave-edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Edit Leave Request</h3>
+    <form id="leave-edit-form" method="post" action="" class="space-y-3">
+      <input type="hidden" name="_method" value="PUT" />
+      <div><label class="label">Employee</label><div id="leave-edit-employee-name" class="input bg-slate-100 dark:bg-slate-800"></div></div>
+      <div><label class="label">Leave Type *</label>
+        <select name="leaveType" id="leave-edit-leavetype" class="input" required>
+          <option value="">Select</option>
+          <% leaveTypes.forEach(function(t){ %><option value="<%= t._id %>"><%= t.name %></option><% }) %>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="label">From *</label><input type="date" name="fromDate" id="leave-edit-from" class="input" required /></div>
+        <div><label class="label">To *</label><input type="date" name="toDate" id="leave-edit-to" class="input" required /></div>
+      </div>
+      <div><label class="label">Reason *</label><textarea name="reason" id="leave-edit-reason" class="input" rows="2" required></textarea></div>
+      <div><label class="label">Status</label>
+        <select name="status" id="leave-edit-status" class="input">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button class="btn-primary">Update</button></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Leave Edit Modal
+  document.querySelectorAll('[data-modal-open="leave-edit-modal"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var modal = document.getElementById('leave-edit-modal');
+      var id = btn.getAttribute('data-modal-id');
+      document.getElementById('leave-edit-form').action = '/leave/' + id + '?_method=PUT';
+      document.getElementById('leave-edit-employee-name').textContent = btn.getAttribute('data-modal-employee-name') || '\u2014';
+      document.getElementById('leave-edit-leavetype').value = btn.getAttribute('data-modal-leavetype') || '';
+      document.getElementById('leave-edit-from').value = btn.getAttribute('data-modal-from') || '';
+      document.getElementById('leave-edit-to').value = btn.getAttribute('data-modal-to') || '';
+      document.getElementById('leave-edit-reason').value = btn.getAttribute('data-modal-reason') || '';
+      document.getElementById('leave-edit-status').value = btn.getAttribute('data-modal-status') || 'pending';
+      modal.classList.remove('hidden');
+    });
+  });
+
+  // Review (Approve/Reject) Modal
+  document.querySelectorAll('[data-modal-open="review-modal"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var modal = document.getElementById('review-modal');
+      var id = btn.getAttribute('data-modal-id');
+      var action = btn.getAttribute('data-modal-action');
+      var empName = btn.getAttribute('data-modal-employee-name') || '\u2014';
+      var from = btn.getAttribute('data-modal-from') || '';
+      var to = btn.getAttribute('data-modal-to') || '';
+      var days = btn.getAttribute('data-modal-days') || '';
+      var reason = btn.getAttribute('data-modal-reason') || '';
+
+      document.getElementById('review-form').action = '/leave/' + id + '/review';
+      document.getElementById('review-status').value = action;
+      document.getElementById('review-employee-name').textContent = empName;
+      document.getElementById('review-dates').textContent = from + ' \u2192 ' + to;
+      document.getElementById('review-days').textContent = days + ' day(s)';
+      document.getElementById('review-reason').textContent = reason;
+      document.getElementById('review-remarks').value = '';
+
+      var titleEl = document.getElementById('review-modal-title');
+      var submitBtn = document.getElementById('review-submit-btn');
+      if (action === 'approved') {
+        titleEl.textContent = 'Approve Leave Request';
+        titleEl.className = 'text-lg font-semibold mb-4 text-emerald-600';
+        submitBtn.className = 'btn-success';
+        submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Approve';
+      } else {
+        titleEl.textContent = 'Reject Leave Request';
+        titleEl.className = 'text-lg font-semibold mb-4 text-rose-600';
+        submitBtn.className = 'btn-danger';
+        submitBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> Reject';
+      }
+
+      modal.classList.remove('hidden');
+    });
+  });
+</script>

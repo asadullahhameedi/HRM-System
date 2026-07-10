@@ -1,0 +1,105 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+  <main class="flex-1 p-4 lg:p-6 space-y-5 max-w-6xl">
+    <nav class="text-sm text-slate-500 flex items-center gap-2 no-print">
+      <a href="/reports" class="hover:text-brand-600">Reports</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-slate-700 dark:text-slate-300">Employee Payroll Report</span>
+    </nav>
+    <div><h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Employee Payroll Report</h2><p class="text-sm text-slate-500">Per-employee payroll history across periods.</p></div>
+
+    <!-- Extended filter bar with employee picker -->
+    <form method="get" class="card">
+      <div class="card-body p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+        <div>
+          <label class="label">From</label>
+          <input type="date" name="from" value="<%= filters.from ? new Date(filters.from).toISOString().slice(0,10) : '' %>" class="input" />
+        </div>
+        <div>
+          <label class="label">To</label>
+          <input type="date" name="to" value="<%= filters.to ? new Date(filters.to).toISOString().slice(0,10) : '' %>" class="input" />
+        </div>
+        <div>
+          <label class="label">Department</label>
+          <select name="department" class="input">
+            <option value="">All</option>
+            <% departments.forEach(function(d){ %><option value="<%= d._id %>" <%= String(filters.department)===String(d._id)?'selected':'' %>><%= d.name %></option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Employee</label>
+          <select name="employee" class="input">
+            <option value="">All</option>
+            <% employees.forEach(function(e){ %><option value="<%= e._id %>" <%= String(filters.employee)===String(e._id)?'selected':'' %>><%= e.employeeId %> · <%= e.firstName %> <%= e.lastName %></option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Period</label>
+          <select name="period" class="input">
+            <option value="">All</option>
+            <% periods.forEach(function(p){ %><option value="<%= p._id %>" <%= String(filters.period)===String(p._id)?'selected':'' %>><%= p.name %></option><% }) %>
+          </select>
+        </div>
+      </div>
+      <div class="px-4 pb-3 flex flex-wrap gap-2 text-xs">
+        <button type="submit" class="btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Filter</button>
+        <a href="?" class="btn-secondary btn-sm"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+        <a href="?format=xlsx&from=<%= filters.from ? new Date(filters.from).toISOString().slice(0,10) : '' %>&to=<%= filters.to ? new Date(filters.to).toISOString().slice(0,10) : '' %>&department=<%= filters.department||'' %>&employee=<%= filters.employee||'' %>&period=<%= filters.period||'' %>" class="btn-secondary btn-sm"><i class="fa-solid fa-file-excel text-emerald-600"></i> Excel</a>
+        <a href="?format=csv&from=<%= filters.from ? new Date(filters.from).toISOString().slice(0,10) : '' %>&to=<%= filters.to ? new Date(filters.to).toISOString().slice(0,10) : '' %>&department=<%= filters.department||'' %>&employee=<%= filters.employee||'' %>&period=<%= filters.period||'' %>" class="btn-secondary btn-sm"><i class="fa-solid fa-file-csv text-sky-600"></i> CSV</a>
+        <button type="button" onclick="HRM_Print.printPage()" class="btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</button>
+      </div>
+    </form>
+
+    <!-- KPI strip -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="card p-4"><div class="text-xs text-slate-500 uppercase">Payslips</div><div class="text-xl font-bold mt-1"><%= totals.count %></div></div>
+      <div class="card p-4"><div class="text-xs text-slate-500 uppercase">Total Gross</div><div class="text-xl font-bold mt-1 text-emerald-600"><%= currencySymbol %><%= Number(totals.gross).toLocaleString() %></div></div>
+      <div class="card p-4"><div class="text-xs text-slate-500 uppercase">Total Deductions</div><div class="text-xl font-bold mt-1 text-rose-600"><%= currencySymbol %><%= Number(totals.deductions).toLocaleString() %></div></div>
+      <div class="card p-4 bg-brand-600 text-white"><div class="text-xs uppercase opacity-80">Total Net</div><div class="text-xl font-bold mt-1"><%= currencySymbol %><%= Number(totals.net).toLocaleString() %></div></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="card"><div class="card-body"><h3 class="font-semibold mb-3">Top Earners (Net)</h3><canvas id="earners-chart" height="220"></canvas></div></div>
+      <div class="card lg:col-span-2"><div class="overflow-x-auto">
+        <% if (payslips.length) { %>
+          <table class="table-clean">
+            <thead><tr><th>Period</th><th>Employee</th><th>Dept</th><th class="text-right">Basic</th><th class="text-right">Gross</th><th class="text-right">Deductions</th><th class="text-right">Net</th><th>Status</th></tr></thead>
+            <tbody>
+              <% payslips.slice(0,200).forEach(function(p){ %>
+                <tr>
+                  <td class="text-xs"><%= p.period ? p.period.name : '—' %></td>
+                  <td><div class="font-medium"><%= p.employee ? p.employee.firstName + ' ' + p.employee.lastName : '—' %></div><div class="text-xs text-slate-500"><%= p.employee ? p.employee.employeeId : '' %></div></td>
+                  <td class="text-xs"><%= p.employee && p.employee.department ? p.employee.department.name : '—' %></td>
+                  <td class="text-right text-xs"><%= currencySymbol %><%= Number(p.basicSalary).toLocaleString() %></td>
+                  <td class="text-right text-xs"><%= currencySymbol %><%= Number(p.grossEarnings).toLocaleString() %></td>
+                  <td class="text-right text-xs text-rose-600"><%= currencySymbol %><%= Number(p.totalDeductions).toLocaleString() %></td>
+                  <td class="text-right font-semibold"><%= currencySymbol %><%= Number(p.netPay).toLocaleString() %></td>
+                  <td><% var sc = { draft:'badge-muted', pending:'badge-warning', approved:'badge-info', paid:'badge-success', cancelled:'badge-danger' }[p.status]; %><span class="<%= sc %> capitalize text-xs"><%= p.status %></span></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+          <% if (payslips.length > 200) { %><p class="text-xs text-slate-400 text-center py-3">Showing first 200 rows. Export for all <%= payslips.length %> rows.</p><% } %>
+        <% } else { %><div class="text-center py-12 text-slate-400 text-sm">No payslips match these filters.</div><% } %>
+      </div></div>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  var byEmployee = <%- JSON.stringify(byEmployee) %>;
+  var ctx = document.getElementById('earners-chart');
+  if (ctx && byEmployee.length) new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: byEmployee.slice(0, 10).map(function (e) { return e.employee ? e.employee.firstName + ' ' + e.employee.lastName : '?'; }),
+      datasets: [{ label: 'Net Pay', data: byEmployee.slice(0, 10).map(function (e) { return e.net; }), backgroundColor: '#164bdc', borderRadius: 6 }]
+    },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+  });
+})();
+</script>

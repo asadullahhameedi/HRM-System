@@ -1,0 +1,246 @@
+<form method="post" action="/settings/payroll" class="space-y-6" id="payroll-settings-form">
+  <!-- Payroll Configuration -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400">
+          <i class="fa-solid fa-sliders text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Payroll Configuration</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Core payroll cycle and calculation parameters</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div>
+          <label class="label">Payroll Frequency</label>
+          <select name="payrollFrequency" class="input">
+            <% ['monthly','semi-monthly','bi-weekly','weekly'].forEach(function(f){ %>
+              <option value="<%= f %>" <%= settings.payrollFrequency===f?'selected':'' %>><%= f %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Payroll Cycle</label>
+          <input name="payrollCycle" value="<%= settings.payrollCycle || '1-31' %>" class="input" placeholder="1-31" />
+        </div>
+        <div>
+          <label class="label">Employee ID Prefix</label>
+          <input name="employeeIdPrefix" value="<%= settings.employeeIdPrefix || 'EMP' %>" class="input" placeholder="EMP" />
+        </div>
+        <div>
+          <label class="label">Payslip Prefix</label>
+          <input name="payslipPrefix" value="<%= settings.payslipPrefix || 'PS' %>" class="input" placeholder="PS" />
+        </div>
+        <div>
+          <label class="label">Working Days / Month</label>
+          <input type="number" name="workingDaysPerMonth" value="<%= settings.workingDaysPerMonth || 26 %>" class="input" min="1" max="31" />
+        </div>
+        <div>
+          <label class="label">Working Hours / Day</label>
+          <input type="number" step="0.5" name="workingHoursPerDay" value="<%= settings.workingHoursPerDay || 8 %>" class="input" min="1" max="24" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature Toggles -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
+          <i class="fa-solid fa-toggle-on text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Feature Toggles</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Enable or disable payroll modules</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Overtime -->
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-amber-400 dark:hover:border-amber-600 transition-all">
+          <input type="checkbox" name="overtimeEnabled" <%= settings.overtimeEnabled !== false ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-clock text-amber-500"></i> Overtime</div>
+            <div class="text-xs text-slate-500">Enable overtime calculation</div>
+          </div>
+        </label>
+        <div>
+          <label class="label">Overtime Multiplier</label>
+          <input type="number" step="0.1" name="overtimeMultiplier" value="<%= settings.overtimeMultiplier || 1.5 %>" class="input" min="1" max="5" />
+        </div>
+        <div></div>
+
+        <!-- Tax -->
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-rose-400 dark:hover:border-rose-600 transition-all">
+          <input type="checkbox" name="taxEnabled" <%= settings.taxEnabled !== false ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-percent text-rose-500"></i> Tax</div>
+            <div class="text-xs text-slate-500">Enable tax deduction</div>
+          </div>
+        </label>
+        <div>
+          <label class="label">Default Tax %</label>
+          <input type="number" step="0.01" name="defaultTaxPercent" value="<%= settings.defaultTaxPercent || 5 %>" class="input" min="0" max="100" />
+        </div>
+        <div></div>
+
+        <!-- Pension -->
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-600 transition-all">
+          <input type="checkbox" name="pensionEnabled" <%= settings.pensionEnabled ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-dollar text-emerald-500"></i> Pension</div>
+            <div class="text-xs text-slate-500">Enable pension contribution</div>
+          </div>
+        </label>
+        <div>
+          <label class="label">Pension %</label>
+          <input type="number" step="0.01" name="pensionPercent" value="<%= settings.pensionPercent || 0 %>" class="input" min="0" max="100" />
+        </div>
+        <div></div>
+
+        <!-- Insurance -->
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-sky-400 dark:hover:border-sky-600 transition-all">
+          <input type="checkbox" name="insuranceEnabled" <%= settings.insuranceEnabled ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-sky-500"></i> Insurance</div>
+            <div class="text-xs text-slate-500">Enable insurance deduction</div>
+          </div>
+        </label>
+        <div>
+          <label class="label">Insurance %</label>
+          <input type="number" step="0.01" name="insurancePercent" value="<%= settings.insurancePercent || 0 %>" class="input" min="0" max="100" />
+        </div>
+        <div></div>
+
+        <!-- Approval workflow -->
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-brand-400 dark:hover:border-brand-600 transition-all sm:col-span-3">
+          <input type="checkbox" name="payrollApprovalWorkflow" <%= settings.payrollApprovalWorkflow !== false ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-check-double text-brand-500"></i> Approval Workflow</div>
+            <div class="text-xs text-slate-500">Require draft → approved → paid workflow</div>
+          </div>
+        </label>
+
+        <!-- Payslip display options -->
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-brand-400 dark:hover:border-brand-600 transition-all">
+          <input type="checkbox" name="payslipShowLogo" <%= settings.payslipShowLogo !== false ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-image text-brand-500"></i> Show Logo on Payslip</div>
+            <div class="text-xs text-slate-500">Display company logo</div>
+          </div>
+        </label>
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-brand-400 dark:hover:border-brand-600 transition-all">
+          <input type="checkbox" name="payslipShowSignature" <%= settings.payslipShowSignature !== false ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-signature text-brand-500"></i> Show Signature</div>
+            <div class="text-xs text-slate-500">Display signature line</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Earning Types -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <i class="fa-solid fa-plus-circle text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100">Earning Types</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Standard earning categories for salary structures</p>
+          </div>
+        </div>
+        <button type="button" class="btn-secondary btn-sm" data-add-catalogue="earningTypes"><i class="fa-solid fa-plus"></i> Add</button>
+      </div>
+      <div id="earningTypes-container" class="space-y-2">
+        <% (settings.earningTypes || []).forEach(function(e){ %>
+          <div class="flex gap-2 earningTypes-row">
+            <input name="earningTypes_name" value="<%= e.name %>" class="input flex-1" placeholder="Name (e.g. Transport Allowance)" />
+            <select name="earningTypes_type" class="input w-36">
+              <option value="fixed" <%= e.type==='fixed'?'selected':'' %>>Fixed</option>
+              <option value="percentage" <%= e.type==='percentage'?'selected':'' %>>% of Basic</option>
+            </select>
+            <button type="button" class="btn-icon btn-ghost text-rose-600" data-remove-row><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deduction Types -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400">
+            <i class="fa-solid fa-minus-circle text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100">Deduction Types</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Standard deduction categories for salary structures</p>
+          </div>
+        </div>
+        <button type="button" class="btn-secondary btn-sm" data-add-catalogue="deductionTypes"><i class="fa-solid fa-plus"></i> Add</button>
+      </div>
+      <div id="deductionTypes-container" class="space-y-2">
+        <% (settings.deductionTypes || []).forEach(function(d){ %>
+          <div class="flex gap-2 deductionTypes-row">
+            <input name="deductionTypes_name" value="<%= d.name %>" class="input flex-1" placeholder="Name (e.g. Income Tax)" />
+            <select name="deductionTypes_type" class="input w-36">
+              <option value="fixed" <%= d.type==='fixed'?'selected':'' %>>Fixed</option>
+              <option value="percentage" <%= d.type==='percentage'?'selected':'' %>>% of Gross</option>
+            </select>
+            <button type="button" class="btn-icon btn-ghost text-rose-600" data-remove-row><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky action bar -->
+  <div class="sticky bottom-4 z-10 no-print">
+    <div class="card shadow-xl">
+      <div class="card-body p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+          <i class="fa-solid fa-circle-info text-brand-500"></i>
+          <span>Payroll changes affect all future calculations.</span>
+        </div>
+        <div class="flex gap-3">
+          <a href="/settings/payroll" class="btn-secondary"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+(function () {
+  var templates = {
+    earningTypes: '<div class="flex gap-2 earningTypes-row"><input name="earningTypes_name" class="input flex-1" placeholder="Name" /><select name="earningTypes_type" class="input w-36"><option value="fixed">Fixed</option><option value="percentage">% of Basic</option></select><button type="button" class="btn-icon btn-ghost text-rose-600" data-remove-row><i class="fa-solid fa-xmark"></i></button></div>',
+    deductionTypes: '<div class="flex gap-2 deductionTypes-row"><input name="deductionTypes_name" class="input flex-1" placeholder="Name" /><select name="deductionTypes_type" class="input w-36"><option value="fixed">Fixed</option><option value="percentage">% of Gross</option></select><button type="button" class="btn-icon btn-ghost text-rose-600" data-remove-row><i class="fa-solid fa-xmark"></i></button></div>',
+  };
+  document.querySelectorAll('[data-add-catalogue]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var key = btn.getAttribute('data-add-catalogue');
+      var container = document.getElementById(key + '-container');
+      if (!container || !templates[key]) return;
+      var div = document.createElement('div');
+      div.innerHTML = templates[key];
+      container.appendChild(div.firstElementChild);
+    });
+  });
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-remove-row]');
+    if (btn) {
+      var container = btn.parentElement.parentElement;
+      if (container.children.length > 1) btn.parentElement.remove();
+      else btn.parentElement.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+    }
+  });
+})();
+</script>

@@ -1,0 +1,254 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <!-- Breadcrumb + header -->
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <nav class="text-sm text-slate-500 flex items-center gap-2">
+          <a href="/dashboard" class="hover:text-brand-600">Dashboard</a>
+          <i class="fa-solid fa-chevron-right text-[8px]"></i>
+          <span class="text-slate-700 dark:text-slate-300 font-medium">Payroll Periods</span>
+        </nav>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-1">Payroll Periods</h2>
+        <p class="text-sm text-slate-500"><%= pagination.total %> period(s) · lifecycle: open → processing → approved → paid → closed · lock to freeze</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="/payroll/periods?format=xlsx" class="btn-secondary btn-sm"><i class="fa-solid fa-file-excel text-emerald-600"></i> Export</a>
+        <button onclick="HRM_Print.printPage()" class="btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</button>
+        <% if (['admin','hr','finance'].indexOf(user.role) !== -1) { %>
+          <button class="btn-primary btn-sm" data-modal-open="period-modal" data-modal-title="Create Payroll Period"><i class="fa-solid fa-plus"></i> New Period</button>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Smart filters bar -->
+    <div class="card">
+      <div class="card-body p-4">
+        <form method="get" id="period-filters" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+          <div class="lg:col-span-2">
+            <label class="label">Search</label>
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" name="q" value="<%= filters.q || filters.search || '' %>" class="input pl-9" placeholder="Search by name or payroll code…" />
+            </div>
+          </div>
+          <div>
+            <label class="label">Status</label>
+            <select name="status" class="input" onchange="document.getElementById('period-filters').submit()">
+              <option value="">All</option>
+              <% ['open','processing','approved','paid','closed','locked'].forEach(function(s){ %>
+                <option value="<%= s %>" <%= filters.status===s?'selected':'' %> class="capitalize"><%= s %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label class="label">Year</label>
+            <select name="year" class="input" onchange="document.getElementById('period-filters').submit()">
+              <option value="">All</option>
+              <% var cy = new Date().getFullYear(); for (var y = cy; y >= cy - 4; y--) { %>
+                <option value="<%= y %>" <%= String(filters.year) === String(y) ? 'selected' : '' %>><%= y %></option>
+              <% } %>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" class="btn-primary btn-sm flex-1"><i class="fa-solid fa-filter"></i> Apply</button>
+            <a href="/payroll/periods" class="btn-secondary btn-sm" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Data table -->
+    <div class="card">
+      <div class="overflow-x-auto">
+        <% if (periods.length) { %>
+          <table class="table-clean">
+            <thead>
+              <tr>
+                <th class="w-10"><input type="checkbox" id="select-all" class="rounded border-slate-300 text-brand-600" title="Select all" /></th>
+                <th>Period</th>
+                <th>Code</th>
+                <th>Range</th>
+                <th>Pay Date</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th class="text-right">Net Payroll</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% periods.forEach(function(p) {
+                var pct = p.completionPercentage || 0;
+                var sc = { open:'badge-muted', processing:'badge-warning', approved:'badge-info', paid:'badge-success', closed:'badge-muted', locked:'badge-danger' }[p.status] || 'badge-muted';
+                var pctColor = pct === 100 ? 'bg-emerald-500' : pct > 0 ? 'bg-brand-500' : 'bg-slate-300';
+              %>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td><input type="checkbox" class="row-check rounded border-slate-300 text-brand-600" value="<%= p._id %>" /></td>
+                  <td class="font-medium">
+                    <a href="/payroll/periods/<%= p._id %>" class="hover:text-brand-600">
+                      <%= p.name %>
+                      <% if (p.lockedBy) { %><i class="fa-solid fa-lock text-amber-500 ml-1 text-xs" title="Locked"></i><% } %>
+                    </a>
+                    <div class="text-xs text-slate-400"><%= p.month %> / <%= new Date(p.startDate).getFullYear() %></div>
+                  </td>
+                  <td class="text-xs font-mono text-slate-500"><%= p.payrollCode || '—' %></td>
+                  <td class="text-xs text-slate-500 whitespace-nowrap"><%= new Date(p.startDate).toLocaleDateString() %> → <%= new Date(p.endDate).toLocaleDateString() %></td>
+                  <td class="text-xs"><%= p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '—' %></td>
+                  <td><span class="<%= sc %> capitalize"><%= p.status %></span></td>
+                  <td class="min-w-[120px]">
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div class="h-full <%= pctColor %>" style="width:<%= pct %>%"></div>
+                      </div>
+                      <span class="text-xs text-slate-500 w-8 text-right"><%= pct %>%</span>
+                    </div>
+                  </td>
+                  <td class="text-right text-sm font-medium"><%= currencySymbol %><%= Number(p.netPayroll || 0).toLocaleString() %></td>
+                  <td class="text-right whitespace-nowrap">
+                    <a href="/payroll/periods/<%= p._id %>" class="btn-icon btn-ghost btn-sm" title="View Details"><i class="fa-solid fa-eye"></i></a>
+                    <% if (['admin','hr','finance'].indexOf(user.role) !== -1) { %>
+                      <% if (p.status === 'open' || p.status === 'processing') { %>
+                        <form method="post" action="/payroll/periods/<%= p._id %>/run" class="inline" title="Generate Payroll">
+                          <button type="submit" class="btn-icon btn-ghost btn-sm text-brand-600"><i class="fa-solid fa-bolt"></i></button>
+                        </form>
+                      <% } %>
+                      <% if (p.status === 'processing') { %>
+                        <form method="post" action="/payroll/periods/<%= p._id %>/status" class="inline">
+                          <input type="hidden" name="status" value="approved" />
+                          <button type="submit" class="btn-icon btn-ghost btn-sm text-emerald-600" title="Approve Payroll"><i class="fa-solid fa-check-double"></i></button>
+                        </form>
+                      <% } %>
+                      <% if (p.status !== 'locked' && p.status !== 'closed') { %>
+                        <form method="post" action="/payroll/periods/<%= p._id %>/lock" class="inline" title="Lock Period">
+                          <button type="submit" class="btn-icon btn-ghost btn-sm text-amber-600"><i class="fa-solid fa-lock"></i></button>
+                        </form>
+                      <% } else if (p.status === 'locked' && user.role === 'admin') { %>
+                        <form method="post" action="/payroll/periods/<%= p._id %>/unlock" class="inline" title="Unlock Period">
+                          <button type="submit" class="btn-icon btn-ghost btn-sm text-emerald-600"><i class="fa-solid fa-lock-open"></i></button>
+                        </form>
+                      <% } %>
+                      <a href="/payroll/periods/<%= p._id %>/export" class="btn-icon btn-ghost btn-sm" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
+                      <% if (p.status === 'open') { %>
+                        <button class="btn-icon btn-ghost btn-sm text-rose-600" data-confirm="Delete period '<%= p.name %>'?" data-confirm-action="/payroll/periods/<%= p._id %>?_method=DELETE" data-confirm-method="POST" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                      <% } %>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="text-center py-20">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fa-regular fa-calendar text-2xl text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300">No payroll periods</h3>
+            <p class="text-sm text-slate-400 mt-1">Create a period to start running payroll.</p>
+            <% if (['admin','hr','finance'].indexOf(user.role) !== -1) { %>
+              <button class="btn-primary btn-sm mt-4" data-modal-open="period-modal" data-modal-title="Create Payroll Period"><i class="fa-solid fa-plus"></i> Create Period</button>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <%- include('../partials/pagination', { pagination, query: filters }) %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/confirm-modal') %>
+
+<!-- Create Period Modal -->
+<div id="period-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar-plus text-brand-600"></i> Create Payroll Period</h3>
+    <form method="post" action="/payroll/periods" class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="label">Payroll Name *</label>
+          <input name="name" class="input" placeholder="e.g. January 2025" required />
+        </div>
+        <div>
+          <label class="label">Payroll Code</label>
+          <input name="payrollCode" class="input" placeholder="e.g. PR-2025-01" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="label">Month *</label>
+          <select name="month" class="input" required>
+            <% for (var i=1;i<=12;i++){ %><option value="<%= i %>" <%= i===(new Date().getMonth()+1)?'selected':'' %>><%= ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i] %></option><% } %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Year *</label>
+          <input type="number" name="year" value="<%= new Date().getFullYear() %>" class="input" required />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="label">Start Date *</label>
+          <input type="date" name="startDate" class="input" required />
+        </div>
+        <div>
+          <label class="label">End Date *</label>
+          <input type="date" name="endDate" class="input" required />
+        </div>
+      </div>
+      <div>
+        <label class="label">Pay Date</label>
+        <input type="date" name="paymentDate" class="input" />
+      </div>
+      <div>
+        <label class="label">Remarks</label>
+        <textarea name="remarks" class="input" rows="2" placeholder="Optional remarks shown on the period detail page"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="btn-secondary" data-modal-close>Cancel</button>
+        <button class="btn-primary"><i class="fa-solid fa-save"></i> Create Period</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Period Modal -->
+<div id="period-edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2"><i class="fa-solid fa-pen text-brand-600"></i> Edit Payroll Period</h3>
+    <form id="period-edit-form" method="post" action="" class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="label">Name *</label><input name="name" id="period-edit-name" class="input" required /></div>
+        <div><label class="label">Payroll Code</label><input name="payrollCode" id="period-edit-code" class="input" /></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="label">Month *</label><select name="month" id="period-edit-month" class="input" required><% for (var i=1;i<=12;i++){ %><option value="<%= i %>"><%= i %></option><% } %></select></div>
+        <div><label class="label">Year *</label><input type="number" name="year" id="period-edit-year" class="input" required /></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="label">Start Date *</label><input type="date" name="startDate" id="period-edit-start-date" class="input" required /></div>
+        <div><label class="label">End Date *</label><input type="date" name="endDate" id="period-edit-end-date" class="input" required /></div>
+      </div>
+      <div><label class="label">Payment Date</label><input type="date" name="paymentDate" id="period-edit-payment-date" class="input" /></div>
+      <div><label class="label">Remarks</label><textarea name="remarks" id="period-edit-remarks" class="input" rows="2"></textarea></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button class="btn-primary">Update</button></div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Select-all checkbox for future bulk actions
+(function () {
+  var sa = document.getElementById('select-all');
+  if (!sa) return;
+  sa.addEventListener('change', function () {
+    document.querySelectorAll('.row-check').forEach(function (cb) { cb.checked = sa.checked; });
+  });
+})();
+</script>

@@ -1,0 +1,9 @@
+node_modules/
+.env
+logs/*.log
+src/public/css/style.css
+src/public/uploads/*
+!src/public/uploads/.gitkeep
+.DS_Store
+npm-debug.log*
+yarn-error.log*

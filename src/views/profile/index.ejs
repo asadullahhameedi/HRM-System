@@ -1,0 +1,87 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5 max-w-4xl">
+    <nav class="text-sm text-slate-500 flex items-center gap-2">
+      <a href="/dashboard" class="hover:text-brand-600">Dashboard</a>
+      <i class="fa-solid fa-chevron-right text-[8px]"></i>
+      <span class="text-slate-700 dark:text-slate-300 font-medium">My Profile</span>
+    </nav>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">My Profile</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <!-- Profile card -->
+      <div class="card">
+        <div class="card-body text-center">
+          <% if (user.avatar) { %>
+            <img src="<%= user.avatar %>" class="w-24 h-24 rounded-2xl object-cover mx-auto ring-4 ring-slate-100 dark:ring-slate-800" alt="Avatar" />
+          <% } else { %>
+            <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-700 text-white flex items-center justify-center text-3xl font-bold uppercase mx-auto ring-4 ring-brand-100 dark:ring-brand-900/30 shadow-lg"><%= user.name ? user.name.charAt(0) : '?' %></div>
+          <% } %>
+          <h3 class="font-semibold text-lg mt-4 text-slate-800 dark:text-slate-100"><%= user.name %></h3>
+          <div class="text-sm text-slate-500 dark:text-slate-400"><%= user.email %></div>
+          <span class="badge-info capitalize mt-2 inline-block"><%= user.role %></span>
+          <% if (employee) { %>
+            <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-left space-y-2.5 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-id-card text-xs text-slate-400"></i>Employee ID</span>
+                <span class="font-medium font-mono text-slate-800 dark:text-slate-100"><%= employee.employeeId %></span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-building text-xs text-slate-400"></i>Department</span>
+                <span class="text-slate-800 dark:text-slate-100"><%= employee.department ? employee.department.name : '—' %></span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-id-badge text-xs text-slate-400"></i>Designation</span>
+                <span class="text-slate-800 dark:text-slate-100"><%= employee.designation ? employee.designation.name : '—' %></span>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Edit forms -->
+      <div class="lg:col-span-2 space-y-5">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-user-pen text-brand-600"></i> Account Details
+            </h3>
+            <form method="post" action="/profile" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="label">Avatar</label>
+                <input type="file" name="avatar" accept="image/*" class="input p-1.5 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-brand-600 file:text-white file:text-xs file:font-medium hover:file:bg-brand-700 file:cursor-pointer" />
+                <p class="help-text">JPG, PNG, WEBP or GIF. Leave blank to keep current avatar.</p>
+              </div>
+              <div><label class="label">Full Name</label><input name="name" value="<%= user.name %>" class="input" /></div>
+              <div><label class="label">Email</label><input type="email" value="<%= user.email %>" class="input" disabled /></div>
+              <div><label class="label">Phone</label><input name="phone" value="<%= employee ? (employee.phone||'') : '' %>" class="input" /></div>
+              <div class="sm:col-span-2"><label class="label">Address</label><input name="address" value="<%= employee ? (employee.address||'') : '' %>" class="input" /></div>
+              <div class="sm:col-span-2 flex justify-end"><button class="btn-primary btn-sm"><i class="fa-solid fa-save"></i> Save Changes</button></div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-key text-brand-600"></i> Change Password
+            </h3>
+            <form method="post" action="/profile/password" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div><label class="label">Current</label><input type="password" name="currentPassword" class="input" required /></div>
+              <div><label class="label">New Password</label><input type="password" name="newPassword" class="input" required minlength="8" /></div>
+              <div><label class="label">Confirm</label><input type="password" name="confirmPassword" class="input" required /></div>
+              <div class="sm:col-span-3 flex justify-end"><button class="btn-primary btn-sm"><i class="fa-solid fa-shield-halved"></i> Update Password</button></div>
+            </form>
+            <p class="help-text">Use at least 8 characters with a mix of letters, numbers, and symbols.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>

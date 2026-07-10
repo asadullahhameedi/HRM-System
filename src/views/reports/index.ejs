@@ -1,0 +1,203 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-6 max-w-7xl">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-slate-500 flex items-center gap-2 no-print">
+      <a href="/dashboard" class="hover:text-brand-600 dark:hover:text-brand-400">Dashboard</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-slate-700 dark:text-slate-300 font-medium">Reports & Analytics</span>
+    </nav>
+
+    <!-- Page header hero -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 lg:p-8 text-white shadow-xl">
+      <!-- Decorative -->
+      <div class="absolute top-0 right-0 w-64 h-64 bg-brand-500/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+      <div class="absolute bottom-0 left-1/4 w-48 h-48 bg-violet-500/15 rounded-full translate-y-1/2 blur-3xl"></div>
+      <div class="absolute inset-0 opacity-[0.04]" style="background-image: linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+      <div class="relative flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-900/50 ring-1 ring-white/10 shrink-0">
+            <i class="fa-solid fa-chart-line text-white text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl lg:text-3xl font-bold tracking-tight">Reports & Analytics</h2>
+            <p class="text-sm text-slate-300 mt-1">Real-time insights from your HRM system — interactive charts, KPIs, and exports.</p>
+          </div>
+        </div>
+        <button onclick="HRM_Print.printPage()" class="no-print inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm text-sm font-medium text-white transition-all duration-200 hover:shadow-lg border border-white/10">
+          <i class="fa-solid fa-print"></i> Print
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-2">
+          <div class="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-users"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= kpis.activeEmployees %></div>
+        <div class="text-xs text-slate-500 mt-0.5">Active Employees</div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-2">
+          <div class="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= currencySymbol %><%= Number(kpis.totalGrossYr).toLocaleString() %></div>
+        <div class="text-xs text-slate-500 mt-0.5">Total Gross (YTD)</div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-2">
+          <div class="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-wallet"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= currencySymbol %><%= Number(kpis.totalNetYr).toLocaleString() %></div>
+        <div class="text-xs text-slate-500 mt-0.5">Total Net (YTD)</div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-2">
+          <div class="w-9 h-9 rounded-lg bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-arrow-trend-down"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= currencySymbol %><%= Number(kpis.totalDeductionsYr).toLocaleString() %></div>
+        <div class="text-xs text-slate-500 mt-0.5">Total Deductions</div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-2">
+          <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-percent"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= currencySymbol %><%= Number(kpis.totalTaxYr).toLocaleString() %></div>
+        <div class="text-xs text-slate-500 mt-0.5">Total Tax (YTD)</div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-2">
+          <div class="w-9 h-9 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= kpis.activeLoans %></div>
+        <div class="text-xs text-slate-500 mt-0.5">Active Loans</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="card lg:col-span-2">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-chart-column text-brand-600"></i> Monthly Payroll Trend
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Gross, net, and deductions over time</p>
+            </div>
+          </div>
+          <div class="h-72"><canvas id="payroll-trend-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-1">
+            <i class="fa-solid fa-chart-pie text-brand-600"></i> Headcount by Department
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">Employee distribution</p>
+          <div class="h-72"><canvas id="dept-chart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Categories -->
+    <% categories.forEach(function(cat) { %>
+      <div>
+        <div class="flex items-center gap-2.5 mb-3">
+          <div class="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400">
+            <i class="fa-solid fa-<%= cat.icon %> text-sm"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100"><%= cat.name %></h3>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <% cat.reports.forEach(function(r) { %>
+            <a href="/reports/<%= r.id %>" class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group">
+              <div class="card-body p-5">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400 group-hover:bg-brand-600 group-hover:text-white group-hover:scale-110 transition-all duration-200">
+                    <i class="fa-solid fa-<%= r.icon %>"></i>
+                  </div>
+                  <h4 class="font-semibold text-slate-800 dark:text-slate-100 text-sm flex-1"><%= r.name %></h4>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed"><%= r.desc %></p>
+                <div class="mt-4 flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 font-medium group-hover:gap-2.5 transition-all">
+                  <span>Open report</span>
+                  <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      </div>
+    <% }) %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  var sym = '<%= currencySymbol %>';
+  var monthlyTrend = <%- JSON.stringify(monthlyTrend || []) %>;
+  var deptHeadcount = <%- JSON.stringify(deptHeadcount || []) %>;
+  var isDark = document.documentElement.classList.contains('dark');
+  var grid = isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.15)';
+  var tick = isDark ? '#94a3b8' : '#64748b';
+
+  Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = tick;
+
+  // Monthly payroll trend chart
+  var trendCtx = document.getElementById('payroll-trend-chart');
+  if (trendCtx && monthlyTrend.length) {
+    new Chart(trendCtx, {
+      type: 'bar',
+      data: {
+        labels: monthlyTrend.map(function (m) { return m.label; }),
+        datasets: [
+          { label: 'Gross', data: monthlyTrend.map(function (m) { return m.gross; }), backgroundColor: 'rgba(29,97,242,0.85)', borderRadius: 6, borderSkipped: false, maxBarThickness: 28 },
+          { label: 'Net', data: monthlyTrend.map(function (m) { return m.net; }), backgroundColor: 'rgba(16,185,129,0.85)', borderRadius: 6, borderSkipped: false, maxBarThickness: 28 },
+          { label: 'Deductions', data: monthlyTrend.map(function (m) { return m.deductions; }), backgroundColor: 'rgba(239,68,68,0.85)', borderRadius: 6, borderSkipped: false, maxBarThickness: 28 },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: 16 } },
+          tooltip: { backgroundColor: isDark ? '#1e293b' : '#0f172a', titleColor: '#fff', bodyColor: '#fff', padding: 12, cornerRadius: 8, callbacks: { label: function (c) { return c.dataset.label + ': ' + sym + Number(c.raw).toLocaleString(); } } }
+        },
+        scales: { x: { ticks: { color: tick }, grid: { display: false } }, y: { ticks: { color: tick, callback: function (v) { return sym + v.toLocaleString(); } }, grid: { color: grid, drawBorder: false }, beginAtZero: true } }
+      },
+    });
+  }
+
+  // Department headcount doughnut chart
+  var deptCtx = document.getElementById('dept-chart');
+  if (deptCtx && deptHeadcount.length) {
+    new Chart(deptCtx, {
+      type: 'doughnut',
+      data: {
+        labels: deptHeadcount.map(function (d) { return d._id || 'Unassigned'; }),
+        datasets: [{ data: deptHeadcount.map(function (d) { return d.count; }), backgroundColor: ['#1d61f2','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#ec4899','#84cc16'], borderWidth: 0, hoverOffset: 8 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '68%',
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, font: { size: 11 }, padding: 12 } },
+          tooltip: { backgroundColor: isDark ? '#1e293b' : '#0f172a', titleColor: '#fff', bodyColor: '#fff', padding: 12, cornerRadius: 8, usePointStyle: true }
+        },
+      },
+    });
+  }
+})();
+</script>

@@ -1,0 +1,249 @@
+<form method="post" action="/settings/appearance" class="space-y-6" id="appearance-settings-form">
+  <!-- Theme Mode -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400">
+          <i class="fa-solid fa-circle-half-stroke text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Theme Mode</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Default theme for new sessions — users can override individually</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <% ['light','dark','system'].forEach(function(t){ %>
+          <label class="settings-theme-card flex flex-col items-center justify-center gap-3 rounded-xl border-2 p-8 cursor-pointer transition-all
+                       <%= settings.defaultTheme === t ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300' %>">
+            <input type="radio" name="defaultTheme" value="<%= t %>" <%= settings.defaultTheme === t ? 'checked' : '' %> class="sr-only" />
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center transition-transform
+                        <%= settings.defaultTheme === t ? 'bg-brand-600 text-white scale-110' : 'bg-slate-100 dark:bg-slate-800 text-slate-400' %>">
+              <i class="fa-solid fa-<%= t==='light'?'sun':t==='dark'?'moon':'circle-half-stroke' %> text-2xl"></i>
+            </div>
+            <div class="text-center">
+              <div class="text-sm font-semibold capitalize"><%= t %></div>
+              <div class="text-xs text-slate-500"><%= t==='light'?'Always light':t==='dark'?'Always dark':'Follow system' %></div>
+            </div>
+          </label>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Color Palette -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
+          <i class="fa-solid fa-palette text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Color Palette</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Customize colors — applies across the entire application instantly</p>
+        </div>
+      </div>
+
+      <!-- Preset palettes -->
+      <div class="mb-6">
+        <label class="label">Quick Presets</label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <% [
+            { name: 'Ocean Blue',   primary:'#164bdc', secondary:'#0ea5e9', accent:'#8b5cf6' },
+            { name: 'Forest Green', primary:'#10b981', secondary:'#06b6d4', accent:'#84cc16' },
+            { name: 'Royal Purple', primary:'#8b5cf6', secondary:'#ec4899', accent:'#06b6d4' },
+            { name: 'Sunset Orange',primary:'#f97316', secondary:'#ef4444', accent:'#f59e0b' },
+            { name: 'Midnight',     primary:'#1e293b', secondary:'#475569', accent:'#0ea5e9' },
+            { name: 'Rose Gold',    primary:'#f43f5e', secondary:'#f59e0b', accent:'#8b5cf6' }
+          ].forEach(function(preset) { %>
+            <button type="button" class="preset-palette flex flex-col items-center gap-2 rounded-xl border-2 p-3 hover:border-brand-400 transition-all
+                    <%= (settings.primaryColor === preset.primary) ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10' : 'border-slate-200 dark:border-slate-700' %>"
+                    data-primary="<%= preset.primary %>" data-secondary="<%= preset.secondary %>" data-accent="<%= preset.accent %>">
+              <div class="flex -space-x-1.5">
+                <span class="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 shadow-sm" style="background:<%= preset.primary %>"></span>
+                <span class="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 shadow-sm" style="background:<%= preset.secondary %>"></span>
+                <span class="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 shadow-sm" style="background:<%= preset.accent %>"></span>
+              </div>
+              <span class="text-xs font-medium text-slate-700 dark:text-slate-300"><%= preset.name %></span>
+            </button>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Custom colors -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <% [
+          { key: 'primaryColor',   label: 'Primary',   hint: 'Buttons, links, active states' },
+          { key: 'secondaryColor', label: 'Secondary', hint: 'Accent highlights' },
+          { key: 'accentColor',    label: 'Accent',    hint: 'Tertiary highlights, badges' },
+          { key: 'successColor',   label: 'Success',   hint: 'Success badges, approved status' },
+          { key: 'warningColor',   label: 'Warning',   hint: 'Warnings, pending status' },
+          { key: 'errorColor',     label: 'Error',     hint: 'Errors, destructive actions' },
+          { key: 'infoColor',      label: 'Info',      hint: 'Info badges' },
+          { key: 'sidebarColor',   label: 'Sidebar',   hint: 'Sidebar background' },
+          { key: 'headerColor',    label: 'Header',    hint: 'Topbar accents' },
+          { key: 'backgroundColor',label: 'Background',hint: 'Page background' },
+          { key: 'cardColor',      label: 'Card',      hint: 'Card background' }
+        ].forEach(function(c) { %>
+          <div>
+            <label class="label"><%= c.label %></label>
+            <div class="flex items-center gap-2">
+              <input type="color" name="<%= c.key %>" id="<%= c.key %>" value="<%= settings[c.key] || '#164bdc' %>" class="w-12 h-10 rounded-lg border border-slate-200 cursor-pointer shrink-0" />
+              <input type="text" id="<%= c.key %>Text" value="<%= settings[c.key] || '#164bdc' %>" class="input flex-1 font-mono text-xs" />
+            </div>
+            <p class="help-text mt-1"><%= c.hint %></p>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Live preview -->
+      <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+        <label class="label flex items-center gap-2"><i class="fa-solid fa-eye text-brand-500"></i> Live Preview</label>
+        <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-5 space-y-4 bg-slate-50 dark:bg-slate-800/50">
+          <div class="flex items-center gap-2 flex-wrap">
+            <button type="button" class="btn-primary" id="preview-primary">Primary</button>
+            <button type="button" class="btn-secondary" id="preview-secondary">Secondary</button>
+            <button type="button" class="btn-success" id="preview-success">Success</button>
+            <button type="button" class="btn-danger" id="preview-error">Error</button>
+            <a href="#" class="text-brand-600 hover:underline" id="preview-link">A link</a>
+            <span class="badge bg-brand-100 text-brand-800" id="preview-badge">Badge</span>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap text-xs">
+            <span class="badge bg-emerald-100 text-emerald-700" id="preview-success-badge">Approved</span>
+            <span class="badge bg-amber-100 text-amber-700" id="preview-warning-badge">Pending</span>
+            <span class="badge bg-rose-100 text-rose-700" id="preview-error-badge">Failed</span>
+            <span class="badge bg-sky-100 text-sky-700" id="preview-info-badge">Info</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout & Typography -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center text-sky-600 dark:text-sky-400">
+          <i class="fa-solid fa-bars-side text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Layout &amp; Typography</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Font, spacing, and visual style</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div>
+          <label class="label">Sidebar Style</label>
+          <select name="sidebarStyle" class="input">
+            <% ['dark','light','colored'].forEach(function(s){ %>
+              <option value="<%= s %>" <%= settings.sidebarStyle===s?'selected':'' %>><%= s.charAt(0).toUpperCase()+s.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Font Family</label>
+          <select name="fontFamily" class="input">
+            <% ['Inter','Roboto','Poppins','Noto Sans','Lato','Open Sans'].forEach(function(f){ %>
+              <option value="<%= f %>" <%= settings.fontFamily===f?'selected':'' %>><%= f %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Font Size</label>
+          <select name="fontSize" class="input">
+            <% ['12px','13px','14px','15px','16px'].forEach(function(s){ %>
+              <option value="<%= s %>" <%= settings.fontSize===s?'selected':'' %>><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Border Radius</label>
+          <select name="borderRadius" class="input">
+            <% ['0rem','0.25rem','0.5rem','0.75rem','1rem','1.5rem'].forEach(function(s){ %>
+              <option value="<%= s %>" <%= settings.borderRadius===s?'selected':'' %>><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Layout Density</label>
+          <select name="layoutDensity" class="input">
+            <option value="comfortable" <%= settings.layoutDensity==='comfortable'?'selected':'' %>>Comfortable</option>
+            <option value="compact" <%= settings.layoutDensity==='compact'?'selected':'' %>>Compact</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky action bar -->
+  <div class="sticky bottom-4 z-10 no-print">
+    <div class="card shadow-xl">
+      <div class="card-body p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+          <i class="fa-solid fa-circle-info text-brand-500"></i>
+          <span>Appearance changes apply instantly after saving.</span>
+        </div>
+        <div class="flex gap-3">
+          <a href="/settings/appearance" class="btn-secondary"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+(function () {
+  var colorKeys = ['primaryColor','secondaryColor','accentColor','successColor','warningColor','errorColor','infoColor','sidebarColor','headerColor','backgroundColor','cardColor'];
+  colorKeys.forEach(function (key) {
+    var color = document.getElementById(key);
+    var text = document.getElementById(key + 'Text');
+    if (!color || !text) return;
+    color.addEventListener('input', function () { text.value = color.value; applyPreview(); });
+    text.addEventListener('input', function () {
+      if (/^#[0-9a-f]{6}$/i.test(text.value)) { color.value = text.value; applyPreview(); }
+    });
+  });
+  document.querySelectorAll('.preset-palette').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      ['primary','secondary','accent'].forEach(function (k) {
+        var v = btn.getAttribute('data-' + k);
+        var cap = k.charAt(0).toUpperCase() + k.slice(1) + 'Color';
+        var colorEl = document.getElementById(cap);
+        var textEl = document.getElementById(cap + 'Text');
+        if (colorEl) colorEl.value = v;
+        if (textEl) textEl.value = v;
+      });
+      applyPreview();
+    });
+  });
+  function applyPreview() {
+    var p = document.getElementById('primaryColor').value;
+    var s = document.getElementById('secondaryColor').value;
+    var suc = document.getElementById('successColor').value;
+    var err = document.getElementById('errorColor').value;
+    var warn = document.getElementById('warningColor').value;
+    var info = document.getElementById('infoColor').value;
+    var btn = document.getElementById('preview-primary');
+    var btnSec = document.getElementById('preview-secondary');
+    var btnSuc = document.getElementById('preview-success');
+    var btnErr = document.getElementById('preview-error');
+    var link = document.getElementById('preview-link');
+    var badge = document.getElementById('preview-badge');
+    var successBadge = document.getElementById('preview-success-badge');
+    var warningBadge = document.getElementById('preview-warning-badge');
+    var errorBadge = document.getElementById('preview-error-badge');
+    var infoBadge = document.getElementById('preview-info-badge');
+    if (btn) btn.style.backgroundColor = p;
+    if (btnSec) btnSec.style.backgroundColor = s + '20'; if (btnSec) btnSec.style.color = s;
+    if (btnSuc) btnSuc.style.backgroundColor = suc;
+    if (btnErr) btnErr.style.backgroundColor = err;
+    if (link) link.style.color = p;
+    if (badge) { badge.style.backgroundColor = p + '20'; badge.style.color = p; }
+    if (successBadge) { successBadge.style.backgroundColor = suc + '20'; successBadge.style.color = suc; }
+    if (warningBadge) { warningBadge.style.backgroundColor = warn + '20'; warningBadge.style.color = warn; }
+    if (errorBadge) { errorBadge.style.backgroundColor = err + '20'; errorBadge.style.color = err; }
+    if (infoBadge) { infoBadge.style.backgroundColor = info + '20'; infoBadge.style.color = info; }
+  }
+  applyPreview();
+})();
+</script>

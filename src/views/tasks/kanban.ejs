@@ -1,0 +1,87 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Task Board</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Drag-free kanban view</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="/tasks" class="btn-secondary btn-sm"><i class="fa-solid fa-list"></i> List</a>
+        <a href="/tasks/create" class="btn-primary btn-sm"><i class="fa-solid fa-plus"></i> New Task</a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card p-3 grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div><label class="label">Priority</label>
+        <select name="priority" class="input">
+          <option value="">All</option>
+          <% ['low','medium','high','critical'].forEach(function(p){ %><option value="<%= p %>" <%= filters.priority==p?'selected':'' %>><%= p %></option><% }) %>
+        </select>
+      </div>
+      <div><label class="label">Scope</label>
+        <select name="scope" class="input">
+          <option value="">All</option>
+          <% ['personal','team','department','project'].forEach(function(s){ %><option value="<%= s %>" <%= filters.scope==s?'selected':'' %>><%= s %></option><% }) %>
+        </select>
+      </div>
+      <div><label class="label">Department</label>
+        <select name="department" class="input">
+          <option value="">All</option>
+          <% departments.forEach(function(d){ %><option value="<%= d._id %>" <%= filters.department==d._id?'selected':'' %>><%= d.name %></option><% }) %>
+        </select>
+      </div>
+      <div class="flex items-end gap-2"><button class="btn-primary flex-1"><i class="fa-solid fa-filter"></i> Filter</button><a href="/tasks/kanban" class="btn-secondary"><i class="fa-solid fa-rotate-left"></i></a></div>
+    </form>
+
+    <!-- Board -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <% var cols = [
+        { key: 'todo', label: 'To Do', color: 'slate', icon: 'list-check' },
+        { key: 'in_progress', label: 'In Progress', color: 'sky', icon: 'spinner' },
+        { key: 'review', label: 'Review', color: 'amber', icon: 'magnifying-glass' },
+        { key: 'done', label: 'Done', color: 'emerald', icon: 'circle-check' },
+        { key: 'blocked', label: 'Blocked', color: 'rose', icon: 'ban' }
+      ]; %>
+      <% cols.forEach(function(col) { %>
+        <div class="card">
+          <div class="card-body">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold capitalize text-slate-700 dark:text-slate-200"><i class="fa-solid fa-<%= col.icon %> mr-2 text-<%= col.color %>-500"></i><%= col.label.replace('_',' ') %></h3>
+              <span class="badge-muted text-[10px]"><%= (board[col.key] || []).length %></span>
+            </div>
+            <div class="space-y-2">
+              <% (board[col.key] || []).forEach(function(t) { %>
+                <a href="/tasks/<%= t._id %>" class="block p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  <div class="text-sm font-medium text-slate-800 dark:text-slate-100 line-clamp-2"><%= t.title %></div>
+                  <div class="flex items-center justify-between mt-2">
+                    <% var pc = {low:'badge-muted', medium:'badge-info', high:'badge-warning', critical:'badge-danger'}[t.priority]; %>
+                    <span class="<%= pc %> text-[10px] capitalize"><%= t.priority %></span>
+                    <% if (t.assignedTo) { %>
+                      <% if (t.assignedTo.avatar) { %>
+                        <img src="<%= t.assignedTo.avatar %>" class="w-6 h-6 rounded-full object-cover" alt="Avatar" />
+                      <% } else { %>
+                        <div class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-[9px] font-semibold uppercase"><%= (t.assignedTo.name || '?').charAt(0) %></div>
+                      <% } %>
+                    <% } %>
+                  </div>
+                  <% if (t.dueDate) { %><div class="text-[10px] text-slate-500 mt-2"><i class="fa-regular fa-calendar"></i> <%= new Date(t.dueDate).toLocaleDateString() %></div><% } %>
+                  <div class="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full mt-2 overflow-hidden"><div class="h-full bg-brand-600" style="width:<%= t.progress || 0 %>%"></div></div>
+                </a>
+              <% }) %>
+              <% if (!(board[col.key] && board[col.key].length)) { %>
+                <div class="text-center text-xs text-slate-400 py-4">No tasks</div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>

@@ -1,0 +1,436 @@
+
+<% var sym = (typeof defaults !== 'undefined' && defaults.currencySymbol) || currencySymbol || '؋'; %>
+<% var cur  = (typeof defaults !== 'undefined' && defaults.currency) || 'AFN'; %>
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5 max-w-5xl">
+    <nav class="text-sm text-slate-500 flex items-center gap-2 no-print">
+      <a href="/payroll/payslips" class="hover:text-brand-600">Payslips</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-slate-700 dark:text-slate-300">Add New</span>
+    </nav>
+
+    <div>
+      <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Add New Payslip</h2>
+      <p class="text-sm text-slate-500 mt-1">Select an employee and a month, then add custom earnings and deductions. All totals update in real time.</p>
+    </div>
+
+    <form id="payslip-form" method="post" action="/payroll/payslips" class="space-y-5" novalidate>
+      <!-- ===================== Basic Information ===================== -->
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-4"><i class="fa-solid fa-id-card mr-2 text-brand-600"></i>Basic Information</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="label">Month *</label>
+              <select name="period" id="payslip-period" class="input" required>
+                <option value="">Select Month</option>
+                <% periods.forEach(function(p) { %>
+                <option value="<%= p._id %>" <%= typeof query !== 'undefined' && query && query.period === String(p._id) ? 'selected' : '' %>><%= p.name %></option>
+                <% }) %>
+              </select>
+              <p class="help-text">Payroll period for this payslip.</p>
+            </div>
+            <div>
+              <label class="label">Employee *</label>
+              <select name="employee" id="payslip-employee" class="input" required>
+                <option value="">Select Employee</option>
+                <% employees.forEach(function(e) { %>
+                <option value="<%= e._id %>" <%= typeof query !== 'undefined' && query && query.employee === String(e._id) ? 'selected' : '' %>><%= e.employeeId %> · <%= e.firstName %> <%= e.lastName %><% if (e.department) { %> (<%= e.department.name %>)<% } %></option>
+                <% }) %>
+              </select>
+              <p class="help-text">Salary, attendance, and loan data load automatically.</p>
+            </div>
+            <div>
+              <label class="label">Currency</label>
+              <input type="text" value="<%= cur %> (<%= sym %>)" class="input bg-slate-50 dark:bg-slate-800/60" readonly />
+              <p class="help-text">System-wide currency (read-only).</p>
+            </div>
+          </div>
+
+          <!-- Existing payslip warning -->
+          <div id="existing-warning" class="hidden mt-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-sm text-amber-700 dark:text-amber-300">
+            <i class="fa-solid fa-circle-exclamation mr-1"></i> A payslip already exists for this employee in this month. Saving again will <strong>update</strong> it with the latest attendance and salary data.
+          </div>
+
+          <!-- No salary structure warning -->
+          <div id="no-structure-warning" class="hidden mt-4 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-3 text-sm text-rose-700 dark:text-rose-300">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span id="no-structure-msg">This employee has no active salary structure. Please add one before generating a payslip.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== Payslip Details (auto) ===================== -->
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-4"><i class="fa-solid fa-circle-info mr-2 text-brand-600"></i>Payslip Details <span class="text-xs font-normal text-slate-400">(auto-calculated)</span></h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-3">
+              <div class="text-xs text-slate-500 dark:text-slate-400">Salary</div>
+              <div class="font-semibold text-slate-800 dark:text-slate-100 mt-1" id="detail-salary">— <span class="text-xs font-normal text-slate-400"><%= sym %></span></div>
+            </div>
+            <div class="rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-3">
+              <div class="text-xs text-slate-500 dark:text-slate-400">Month Days</div>
+              <div class="font-semibold text-slate-800 dark:text-slate-100 mt-1" id="detail-month-days">—</div>
+            </div>
+            <div class="rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-3">
+              <div class="text-xs text-slate-500 dark:text-slate-400">Absent Days</div>
+              <div class="font-semibold text-rose-600 mt-1" id="detail-absent-days">—</div>
+            </div>
+            <div class="rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-3">
+              <div class="text-xs text-slate-500 dark:text-slate-400">Loan Installment</div>
+              <div class="font-semibold text-slate-800 dark:text-slate-100 mt-1" id="detail-loan">— <span class="text-xs font-normal text-slate-400"><%= sym %></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== Earnings ===================== -->
+      <div class="card">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-emerald-600"><i class="fa-solid fa-arrow-trend-up mr-2"></i>Earnings</h3>
+            <button type="button" class="btn-ghost btn-sm" data-payslip-add="earnings"><i class="fa-solid fa-plus"></i> Add Earning</button>
+          </div>
+          <div id="earnings-container" class="space-y-2">
+            <!-- one empty row so the user has something to start with -->
+            <div class="flex gap-2 earnings-row">
+              <input name="earnings_name" class="input flex-1" placeholder="Earning name (e.g. Performance Bonus)" />
+              <input name="earnings_amount" type="number" step="0.01" min="0" class="input w-32" placeholder="Amount" data-amount />
+              <button type="button" class="btn-icon btn-ghost text-rose-600" data-payslip-remove><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
+          <div class="flex justify-end mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+            <div class="text-sm text-slate-500 dark:text-slate-400">Total Earnings:</div>
+            <div class="ml-2 font-semibold text-emerald-600" id="total-earnings">0.00 <%= sym %></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== Deductions ===================== -->
+      <div class="card">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-rose-600"><i class="fa-solid fa-arrow-trend-down mr-2"></i>Deductions</h3>
+            <button type="button" class="btn-ghost btn-sm" data-payslip-add="deductions"><i class="fa-solid fa-plus"></i> Add Deduction</button>
+          </div>
+          <div id="deductions-container" class="space-y-2">
+            <div class="flex gap-2 deductions-row">
+              <input name="deductions_name" class="input flex-1" placeholder="Deduction name (e.g. Late Penalty)" />
+              <input name="deductions_amount" type="number" step="0.01" min="0" class="input w-32" placeholder="Amount" data-amount />
+              <button type="button" class="btn-icon btn-ghost text-rose-600" data-payslip-remove><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
+          <div class="flex justify-end mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+            <div class="text-sm text-slate-500 dark:text-slate-400">Total Deductions (custom):</div>
+            <div class="ml-2 font-semibold text-rose-600" id="total-deductions-custom">0.00 <%= sym %></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== Narration ===================== -->
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-3"><i class="fa-solid fa-align-left mr-2 text-brand-600"></i>Narration</h3>
+          <textarea name="narration" id="payslip-narration" rows="3" class="input" placeholder="Optional notes shown on the payslip (e.g. mid-month adjustment, one-time bonus reason, etc.)"></textarea>
+        </div>
+      </div>
+
+      <!-- ===================== Summary ===================== -->
+      <div class="card bg-gradient-to-br from-brand-600 to-brand-700 text-white">
+        <div class="card-body">
+          <h3 class="font-semibold mb-4"><i class="fa-solid fa-calculator mr-2"></i>Salary Summary</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Earnings Summary -->
+            <div class="rounded-lg bg-white/10 border border-white/20 p-3">
+              <div class="text-xs uppercase tracking-wider opacity-80">Total Earnings</div>
+              <div class="text-lg font-bold mt-1" id="sum-gross">0.00 <%= sym %></div>
+              <div class="text-xs opacity-70 mt-1">Auto + custom rows</div>
+            </div>
+            <!-- Deductions Summary -->
+            <div class="rounded-lg bg-white/10 border border-white/20 p-3">
+              <div class="text-xs uppercase tracking-wider opacity-80">Absent Days Deduction</div>
+              <div class="text-lg font-bold mt-1" id="sum-absent-deduction">0.00 <%= sym %></div>
+              <div class="text-xs opacity-70 mt-1" id="sum-absent-days-label">0 absent day(s)</div>
+            </div>
+            <div class="rounded-lg bg-white/10 border border-white/20 p-3">
+              <div class="text-xs uppercase tracking-wider opacity-80">Total Deductions</div>
+              <div class="text-lg font-bold mt-1" id="sum-total-deductions">0.00 <%= sym %></div>
+              <div class="text-xs opacity-70 mt-1">Tax + absent + loan + advance + custom</div>
+            </div>
+            <!-- Salary Summary -->
+            <div class="rounded-lg bg-white/15 border border-white/30 p-3">
+              <div class="text-xs uppercase tracking-wider opacity-80">Net Salary</div>
+              <div class="text-lg font-bold mt-1" id="sum-net-salary">0.00 <%= sym %></div>
+              <div class="text-xs opacity-70 mt-1">Earnings − deductions (excl. advance)</div>
+            </div>
+            <div class="rounded-lg bg-white/10 border border-white/20 p-3">
+              <div class="text-xs uppercase tracking-wider opacity-80">Advance</div>
+              <div class="text-lg font-bold mt-1" id="sum-advance">0.00 <%= sym %></div>
+              <div class="text-xs opacity-70 mt-1">Auto-deducted this period</div>
+            </div>
+            <div class="rounded-lg bg-white/10 border border-white/20 p-3">
+              <div class="text-xs uppercase tracking-wider opacity-80">Remaining Advance</div>
+              <div class="text-lg font-bold mt-1" id="sum-remaining-advance">0.00 <%= sym %></div>
+              <div class="text-xs opacity-70 mt-1">After this period's deduction</div>
+            </div>
+            <div class="rounded-lg bg-white/20 border border-white/40 p-3 sm:col-span-2">
+              <div class="text-xs uppercase tracking-wider opacity-90">Payable Salary</div>
+              <div class="text-2xl font-extrabold mt-1" id="sum-payable">0.00 <%= sym %></div>
+              <div class="text-xs opacity-80 mt-1">Take-home amount (Net Salary − Advance)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== Actions ===================== -->
+      <div class="flex justify-end gap-2">
+        <a href="/payroll/payslips" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary" id="payslip-submit"><i class="fa-solid fa-save"></i> Save Payslip</button>
+      </div>
+    </form>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+
+<script>
+(function () {
+  // ===================== State =====================
+  // Holds the latest preview returned by the server (salary, days,
+  // absent-day deduction, advance, etc.). Updated whenever the user
+  // changes the employee or month. The summary panel re-computes from
+  // this state + the custom earnings/deductions rows on every keystroke.
+  var preview = null;
+  var sym = '<%= sym %>';
+
+  var periodSel   = document.getElementById('payslip-period');
+  var employeeSel = document.getElementById('payslip-employee');
+  var noStructure = document.getElementById('no-structure-warning');
+  var noStructureMsg = document.getElementById('no-structure-msg');
+  var existingWarn = document.getElementById('existing-warning');
+
+  // ===================== Helpers =====================
+  function fmt(n) {
+    var v = Number(n) || 0;
+    return v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + sym;
+  }
+  function num(v) { var n = Number(v); return isNaN(n) ? 0 : n; }
+
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  // Sum the [data-amount] inputs inside a container.
+  function sumContainer(containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return 0;
+    var total = 0;
+    container.querySelectorAll('[data-amount]').forEach(function (input) {
+      total += num(input.value);
+    });
+    return total;
+  }
+
+  // ===================== Dynamic rows =====================
+  // Local add/remove handlers — namespaced under `data-payslip-*` so they
+  // don't collide with the global salary-structure row handler in app.js.
+  document.querySelectorAll('[data-payslip-add]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var group = btn.getAttribute('data-payslip-add');
+      var container = document.getElementById(group + '-container');
+      if (!container) return;
+      var row = document.createElement('div');
+      row.className = 'flex gap-2 ' + group + '-row';
+      row.innerHTML =
+        '<input name="' + group + '_name" class="input flex-1" placeholder="' + (group === 'earnings' ? 'Earning name' : 'Deduction name') + '" />' +
+        '<input name="' + group + '_amount" type="number" step="0.01" min="0" class="input w-32" placeholder="Amount" data-amount />' +
+        '<button type="button" class="btn-icon btn-ghost text-rose-600" data-payslip-remove><i class="fa-solid fa-xmark"></i></button>';
+      container.appendChild(row);
+      recalculate();
+    });
+  });
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-payslip-remove]');
+    if (!btn) return;
+    var container = btn.parentElement.parentElement;
+    // Keep at least one row visible so the user always sees the input shape.
+    if (container.children.length <= 1) {
+      // Clear inputs instead of removing the last row.
+      btn.parentElement.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+    } else {
+      btn.parentElement.remove();
+    }
+    recalculate();
+  });
+
+  // Recompute on every input change inside the form.
+  document.getElementById('payslip-form').addEventListener('input', recalculate);
+
+  // ===================== AJAX preview =====================
+  // Fetches auto-calculated values from the server whenever the user
+  // picks both employee + month. Falls back gracefully on error.
+  var previewAbort = null;
+
+  function fetchPreview() {
+    var emp = employeeSel.value;
+    var per = periodSel.value;
+    // Reset warnings
+    noStructure.classList.add('hidden');
+    existingWarn.classList.add('hidden');
+
+    if (!emp || !per) {
+      preview = null;
+      recalculate();
+      return;
+    }
+    if (previewAbort) previewAbort.abort();
+    previewAbort = new XMLHttpRequest();
+    previewAbort.open('GET', '/payroll/payslips/preview?employee=' + encodeURIComponent(emp) + '&period=' + encodeURIComponent(per), true);
+    previewAbort.onreadystatechange = function () {
+      if (previewAbort.readyState !== 4) return;
+      if (previewAbort.status === 200) {
+        try {
+          var data = JSON.parse(previewAbort.responseText);
+          if (data.ok) {
+            preview = data.preview;
+            recalculate();
+            // Check for an existing payslip (server already includes this in
+            // the warning when the user came from a "regenerate" link).
+            checkExistingPayslip(emp, per);
+          } else {
+            // Likely "no active salary structure" — show a friendly message.
+            preview = null;
+            noStructureMsg.textContent = data.error || 'Unable to load salary data for this employee.';
+            noStructure.classList.remove('hidden');
+            recalculate();
+          }
+        } catch (e) {
+          preview = null;
+          recalculate();
+        }
+      } else {
+        preview = null;
+        recalculate();
+      }
+    };
+    previewAbort.send();
+  }
+
+  // Show the "payslip already exists" warning via the existing AJAX endpoint.
+  function checkExistingPayslip(emp, per) {
+    fetch('/payroll/payslips?ajax=1&employee=' + encodeURIComponent(emp) + '&period=' + encodeURIComponent(per))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.exists) existingWarn.classList.remove('hidden');
+        else existingWarn.classList.add('hidden');
+      })
+      .catch(function () { existingWarn.classList.add('hidden'); });
+  }
+
+  // ===================== Recalculate =====================
+  // Combine server-side preview (salary, absent deduction, advance, loan,
+  // tax) with user-added earnings/deductions to produce the live summary.
+  function recalculate() {
+    var hasPreview = !!preview;
+    var salary = hasPreview ? num(preview.salary.total) : 0;
+    var monthDays = hasPreview ? num(preview.monthDays) : 0;
+    var absentDays = hasPreview ? num(preview.attendance.absentDays) : 0;
+    var absentDeduction = hasPreview ? num(preview.absentDaysDeduction) : 0;
+    var loanInstallment = hasPreview ? num(preview.loanInstallment) : 0;
+    var advance = hasPreview ? num(preview.advance) : 0;
+    var remainingAdvance = hasPreview ? num(preview.remainingAdvanceAfter) : 0;
+
+    // Auto earnings = gross from server MINUS custom earnings (server
+    // preview's grossEarnings already includes recurring structure
+    // components like basic + recurring allowances + bonuses + incentives
+    // but NOT user-added custom rows). We add custom rows on top.
+    var autoEarnings = hasPreview ? num(preview.summary.grossEarnings) : 0;
+    var customEarnings = sumContainer('earnings-container');
+    var customDeductions = sumContainer('deductions-container');
+
+    var totalEarnings = autoEarnings + customEarnings;
+    // Server's totalDeductions already includes tax + absent + loan + advance
+    // (but not custom deductions). Add custom deductions on top.
+    var autoDeductions = hasPreview ? num(preview.summary.totalDeductions) : 0;
+    var totalDeductions = autoDeductions + customDeductions;
+    // Net Salary (per requirements): earnings − deductions EXCLUDING advance
+    var netSalary = totalEarnings - (totalDeductions - advance);
+    // Payable Salary: take-home = Net Salary − Advance
+    var payable = netSalary - advance;
+
+    // ---- Payslip Details panel ----
+    setText('detail-salary', hasPreview ? fmt(salary) : '—');
+    // Append symbol suffix for salary (kept simple — fmt already adds symbol)
+    setText('detail-month-days', hasPreview ? String(monthDays) : '—');
+    setText('detail-absent-days', hasPreview ? String(absentDays) : '—');
+    setText('detail-loan', hasPreview ? fmt(loanInstallment) : '—');
+
+    // ---- Earnings/Deductions card totals ----
+    setText('total-earnings', fmt(customEarnings));
+    setText('total-deductions-custom', fmt(customDeductions));
+
+    // ---- Summary panel ----
+    setText('sum-gross', fmt(totalEarnings));
+    setText('sum-absent-deduction', fmt(absentDeduction));
+    setText('sum-absent-days-label', absentDays + ' absent day(s)');
+    setText('sum-total-deductions', fmt(totalDeductions));
+    setText('sum-net-salary', fmt(netSalary));
+    setText('sum-advance', fmt(advance));
+    setText('sum-remaining-advance', fmt(remainingAdvance));
+    setText('sum-payable', fmt(payable));
+  }
+
+  // ===================== Validation =====================
+  // Lightweight client-side check before submit. The server also validates
+  // (required fields are marked with `required` on the inputs), but this
+  // gives the user instant feedback if they try to save without picking
+  // an employee or month.
+  document.getElementById('payslip-form').addEventListener('submit', function (e) {
+    if (!periodSel.value || !employeeSel.value) {
+      e.preventDefault();
+      if (!periodSel.value) {
+        periodSel.focus();
+        alert('Please select a Month before saving.');
+      } else {
+        employeeSel.focus();
+        alert('Please select an Employee before saving.');
+      }
+      return;
+    }
+    if (!preview) {
+      e.preventDefault();
+      alert('Salary data is still loading, or this employee has no active salary structure. Please fix and try again.');
+      return;
+    }
+    // Disable the button to prevent double-submit.
+    var btn = document.getElementById('payslip-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+  });
+
+  // ===================== Wire up =====================
+  periodSel.addEventListener('change', fetchPreview);
+  employeeSel.addEventListener('change', fetchPreview);
+
+  // If the user arrived via a "regenerate" link (query strings pre-set),
+  // automatically fetch the preview for the pre-selected employee+period.
+  if (periodSel.value && employeeSel.value) {
+    fetchPreview();
+    // Also surface the existing-payslip warning immediately.
+    existingWarn.classList.remove('hidden');
+  } else {
+    recalculate();
+  }
+
+  <% if (typeof existingPayslip !== 'undefined' && existingPayslip) { %>
+  existingWarn.classList.remove('hidden');
+  <% } %>
+})();
+</script>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= (theme === 'dark') ? 'dark' : '' %>">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 · Not Found</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/vendor/@fortawesome/fontawesome-free/css/all.min.css" />
+</head>
+<body class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+  <div class="text-center max-w-md">
+    <div class="text-7xl font-extrabold text-brand-600 mb-2">404</div>
+    <h1 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Page Not Found</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6"><%= message || 'The page you are looking for does not exist or has been moved.' %></p>
+    <a href="<%= user ? '/dashboard' : '/login' %>" class="btn-primary"><i class="fa-solid fa-house"></i> Back to Home</a>
+  </div>
+</body>
+</html>

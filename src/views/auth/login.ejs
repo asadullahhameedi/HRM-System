@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= theme === 'dark' ? 'dark' : '' %>">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Sign In · <%= appName %></title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/vendor/@fortawesome/fontawesome-free/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script>
+    (function () {
+      try {
+        var t = '<%= theme %>';
+        var stored = localStorage.getItem('hrm-theme') || t || 'system';
+        var isDark = stored === 'dark' || (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', isDark);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    .login-bg {
+      background: linear-gradient(135deg, #0b1120 0%, #131c31 50%, #0f172a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-bg::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      right: -10%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(circle, rgba(29, 97, 242, 0.25), transparent 60%);
+      filter: blur(60px);
+      pointer-events: none;
+    }
+    .login-bg::after {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      left: -10%;
+      width: 50%;
+      height: 50%;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.18), transparent 60%);
+      filter: blur(60px);
+      pointer-events: none;
+    }
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse at center, black, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black, transparent 70%);
+    }
+    @media (max-width: 1023.98px) {
+      .login-split { display: none; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex bg-slate-50 dark:bg-slate-950">
+  <!-- Left: Branding Panel (desktop only) -->
+  <div class="login-split login-bg flex-1 flex flex-col justify-between p-12 text-white relative">
+    <div class="grid-pattern"></div>
+
+    <!-- Logo -->
+    <div class="relative flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-900/50 ring-1 ring-white/10">
+        <i class="fa-solid fa-users-gear text-white text-lg"></i>
+      </div>
+      <div>
+        <div class="font-bold text-lg"><%= appName %></div>
+        <div class="text-[10px] uppercase tracking-widest text-slate-400">Enterprise HRM</div>
+      </div>
+    </div>
+
+    <!-- Hero content -->
+    <div class="relative max-w-md">
+      <h1 class="text-4xl font-bold tracking-tight mb-4 leading-tight">
+        Manage your workforce with <span class="text-gradient bg-gradient-to-r from-brand-300 to-brand-500 bg-clip-text text-transparent">precision and ease</span>
+      </h1>
+      <p class="text-slate-400 text-base leading-relaxed mb-8">
+        A complete human resource management platform — employees, attendance, payroll, leave, and analytics in one beautiful dashboard.
+      </p>
+
+      <!-- Feature list -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-3 text-sm">
+          <div class="w-8 h-8 rounded-lg bg-brand-500/15 flex items-center justify-center text-brand-300">
+            <i class="fa-solid fa-users text-xs"></i>
+          </div>
+          <span class="text-slate-300">Comprehensive employee management</span>
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-300">
+            <i class="fa-solid fa-fingerprint text-xs"></i>
+          </div>
+          <span class="text-slate-300">Real-time attendance tracking</span>
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+          <div class="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center text-violet-300">
+            <i class="fa-solid fa-wallet text-xs"></i>
+          </div>
+          <span class="text-slate-300">Automated payroll processing</span>
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-300">
+            <i class="fa-solid fa-chart-line text-xs"></i>
+          </div>
+          <span class="text-slate-300">Advanced analytics & reporting</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="relative flex items-center gap-4 text-xs text-slate-500">
+      <span class="flex items-center gap-1.5">
+        <i class="fa-solid fa-shield-halved"></i> Secured
+      </span>
+      <span class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-soft"></span> System Operational
+      </span>
+      <span>v1.2.0</span>
+    </div>
+  </div>
+
+  <!-- Right: Login Form -->
+  <div class="flex-1 flex items-center justify-center p-6 lg:p-12">
+    <div class="w-full max-w-md">
+      <!-- Mobile brand -->
+      <div class="lg:hidden text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 mb-3 shadow-lg shadow-brand-500/30">
+          <i class="fa-solid fa-users-gear text-white text-2xl"></i>
+        </div>
+        <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100"><%= appName %></h1>
+        <p class="text-xs text-slate-500 mt-1">Enterprise Human Resource Management</p>
+      </div>
+
+      <!-- Card -->
+      <div class="card">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Welcome back</h2>
+            <button type="button" id="theme-quick-toggle" class="btn-icon text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" title="Toggle theme" aria-label="Toggle theme">
+              <i class="fa-solid fa-circle-half-stroke"></i>
+            </button>
+          </div>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Sign in to access your dashboard.</p>
+
+          <% if (flash && flash.error && flash.error.length) { %>
+            <div class="mb-4 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400 text-sm flex items-center gap-2.5 animate-fade-in">
+              <i class="fa-solid fa-circle-exclamation"></i><span><%= flash.error[0] %></span>
+            </div>
+          <% } %>
+
+          <form action="/login" method="post" class="space-y-4">
+            <div>
+              <label class="label" for="email">Email</label>
+              <div class="relative">
+                <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+                <input type="email" id="email" name="email" required autofocus class="input pl-10" placeholder="you@company.com" />
+              </div>
+            </div>
+            <div>
+              <label class="label" for="password">Password</label>
+              <div class="relative">
+                <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+                <input type="password" id="password" name="password" required class="input pl-10 pr-10" placeholder="••••••••" />
+                <button type="button" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" data-toggle-password="password" aria-label="Show password">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <label class="flex items-center gap-2 text-slate-600 dark:text-slate-300 cursor-pointer">
+                <input type="checkbox" name="remember" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+                Remember me
+              </label>
+            </div>
+            <button type="submit" class="btn-primary w-full btn-lg">
+              <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <p class="text-center text-xs text-slate-400 mt-6">&copy; <%= year %> <%= appName %>. All rights reserved.</p>
+    </div>
+  </div>
+  <script src="/js/theme.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

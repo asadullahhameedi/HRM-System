@@ -1,0 +1,42 @@
+<% keepQuery = function(q, exclude) {
+  if (!q) return '';
+  var parts = [];
+  Object.keys(q).forEach(function(k) { if (exclude.indexOf(k) === -1 && q[k]) parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(q[k])); });
+  return parts.join('&');
+}; %>
+
+<% if (pagination && pagination.totalPages > 1) { %>
+<nav class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-5" aria-label="Pagination">
+  <div class="text-xs text-slate-500 dark:text-slate-400">
+    Showing <span class="font-semibold text-slate-700 dark:text-slate-300"><%= pagination.from %></span>–<span class="font-semibold text-slate-700 dark:text-slate-300"><%= pagination.to %></span> of <span class="font-semibold text-slate-700 dark:text-slate-300"><%= pagination.total %></span>
+  </div>
+  <ul class="flex items-center gap-1">
+    <li>
+      <a href="?page=1<%= keepQuery(query, ['page']) ? '&' + keepQuery(query, ['page']) : '' %>" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors <%= !pagination.hasPrev ? 'opacity-40 pointer-events-none' : '' %>" aria-label="First">
+        <i class="fa-solid fa-angles-left text-xs"></i>
+      </a>
+    </li>
+    <li>
+      <a href="?page=<%= pagination.current - 1 %><%= keepQuery(query, ['page']) ? '&' + keepQuery(query, ['page']) : '' %>" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors <%= !pagination.hasPrev ? 'opacity-40 pointer-events-none' : '' %>" aria-label="Previous">
+        <i class="fa-solid fa-angle-left text-xs"></i>
+      </a>
+    </li>
+    <% var start = Math.max(1, pagination.current - 2); var end = Math.min(pagination.totalPages, start + 4); start = Math.max(1, end - 4); %>
+    <% for (var p = start; p <= end; p++) { %>
+      <li>
+        <a href="?page=<%= p %><%= keepQuery(query, ['page']) ? '&' + keepQuery(query, ['page']) : '' %>" class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 <%= p === pagination.current ? 'bg-brand-600 text-white shadow-md shadow-brand-500/25' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800' %>"><%= p %></a>
+      </li>
+    <% } %>
+    <li>
+      <a href="?page=<%= pagination.current + 1 %><%= keepQuery(query, ['page']) ? '&' + keepQuery(query, ['page']) : '' %>" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors <%= !pagination.hasNext ? 'opacity-40 pointer-events-none' : '' %>" aria-label="Next">
+        <i class="fa-solid fa-angle-right text-xs"></i>
+      </a>
+    </li>
+    <li>
+      <a href="?page=<%= pagination.totalPages %><%= keepQuery(query, ['page']) ? '&' + keepQuery(query, ['page']) : '' %>" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors <%= !pagination.hasNext ? 'opacity-40 pointer-events-none' : '' %>" aria-label="Last">
+        <i class="fa-solid fa-angles-right text-xs"></i>
+      </a>
+    </li>
+  </ul>
+</nav>
+<% } %>

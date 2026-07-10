@@ -1,0 +1,124 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+          <a href="/dashboard" class="hover:text-brand-600">Dashboard</a>
+          <i class="fa-solid fa-chevron-right text-[8px]"></i>
+          <a href="/payroll/periods" class="hover:text-brand-600">Payroll</a>
+          <i class="fa-solid fa-chevron-right text-[8px]"></i>
+          <span class="text-slate-700 dark:text-slate-300 font-medium">Loans & Advances</span>
+        </div>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Loans & Advances</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400"><%= pagination.total %> total records</p>
+      </div>
+      <div class="flex gap-2 no-print">
+        <button onclick="HRM_Print.printPage()" class="btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</button>
+        <% if (['admin','hr'].indexOf(user.role) !== -1) { %><button class="btn-primary btn-sm" data-modal-open="loan-modal" data-modal-title="Record Loan/Advance"><i class="fa-solid fa-plus"></i> New</button><% } %>
+      </div>
+    </div>
+
+    <div class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <% if (loans.length) { %>
+          <table class="table-clean">
+            <thead><tr><th>Employee</th><th>Type</th><th class="text-right">Principal</th><th class="text-right">Paid</th><th class="text-right">Remaining</th><th class="text-right">Installment</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+            <tbody>
+              <% loans.forEach(function(l) { %>
+                <tr>
+                  <td><div class="font-medium"><%= l.employee ? l.employee.firstName+' '+l.employee.lastName : '—' %></div><div class="text-xs text-slate-500"><%= l.employee ? l.employee.employeeId : '' %></div></td>
+                  <td><span class="<%= l.type==='loan'?'badge-info':'badge-warning' %> capitalize"><%= l.type %></span></td>
+                  <td class="text-right"><%= currencySymbol %><%= Number(l.principal).toLocaleString() %></td>
+                  <td class="text-right text-emerald-600"><%= currencySymbol %><%= Number(l.paidAmount).toLocaleString() %></td>
+                  <td class="text-right text-rose-600"><%= currencySymbol %><%= Number(l.remainingAmount).toLocaleString() %></td>
+                  <td class="text-right"><%= currencySymbol %><%= Number(l.installmentAmount).toLocaleString() %></td>
+                  <td><span class="<%= l.status==='active'?'badge-warning':l.status==='cleared'?'badge-success':'badge-muted' %> capitalize"><%= l.status %></span></td>
+                  <td class="text-right">
+                    <% if (['admin','hr'].indexOf(user.role) !== -1) { %>
+                      <button class="btn-icon btn-ghost btn-sm" data-modal-open="loan-edit-modal" data-modal-title="Edit Loan/Advance" data-modal-id="<%= l._id %>" data-modal-employee="<%= l.employee ? l.employee._id : '' %>" data-modal-employee-name="<%= l.employee ? (l.employee.firstName + ' ' + l.employee.lastName) : '' %>" data-modal-type="<%= l.type %>" data-modal-principal="<%= l.principal %>" data-modal-installment="<%= l.installmentAmount %>" data-modal-description="<%= l.description || '' %>" data-modal-status="<%= l.status %>" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                    <% } %>
+                    <% if (['admin','hr'].indexOf(user.role) !== -1 && l.status==='active') { %>
+                      <button class="btn-icon btn-ghost btn-sm text-emerald-600" data-modal-open="loan-payment-modal" data-modal-id="<%= l._id %>" title="Record payment"><i class="fa-solid fa-money-bill-transfer"></i></button>
+                    <% } %>
+                    <% if (user.role === 'admin') { %>
+                      <button class="btn-icon btn-ghost btn-sm text-rose-600" data-confirm="Delete this <%= l.type %>?" data-confirm-action="/payroll/loans/<%= l._id %>?_method=DELETE" data-confirm-method="POST" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="text-center py-20">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fa-solid fa-hand-holding-dollar text-2xl text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300">No loans or advances</h3>
+            <p class="text-sm text-slate-400 mt-1">Loans and advances will appear here.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <%- include('../partials/pagination', { pagination, query: filters }) %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/confirm-modal') %>
+
+<div id="loan-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Record Loan / Advance</h3>
+    <form method="post" action="/payroll/loans" class="space-y-3">
+      <div><label class="label">Employee *</label><select name="employee" class="input" required><option value="">Select</option><% employees.forEach(function(e){ %><option value="<%= e._id %>"><%= e.employeeId %> · <%= e.firstName %> <%= e.lastName %></option><% }) %></select></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="label">Type *</label><select name="type" class="input"><option value="loan">Loan</option><option value="advance">Advance</option></select></div>
+        <div><label class="label">Issued Date</label><input type="date" name="issuedDate" class="input" /></div>
+        <div><label class="label">Principal *</label><input type="number" step="0.01" name="principal" class="input" required /></div>
+        <div><label class="label">Installment *</label><input type="number" step="0.01" name="installmentAmount" class="input" required /></div>
+      </div>
+      <div><label class="label">Description</label><textarea name="description" class="input" rows="2"></textarea></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button class="btn-primary">Save</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="loan-payment-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Record Payment</h3>
+    <form method="post" action="" id="payment-form" class="space-y-3">
+      <div><label class="label">Amount</label><input type="number" step="0.01" name="amount" class="input" required /></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button class="btn-primary">Record</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="loan-edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Edit Loan / Advance</h3>
+    <form id="loan-edit-form" method="post" action="" class="space-y-3">
+      <div>
+        <label class="label">Employee (read-only)</label>
+        <input type="text" id="loan-edit-employee-name" class="input bg-slate-100 dark:bg-slate-800 cursor-not-allowed" readonly />
+        <input type="hidden" name="employee" id="loan-edit-employee" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="label">Type *</label><select name="type" id="loan-edit-type" class="input"><option value="loan">Loan</option><option value="advance">Advance</option></select></div>
+        <div><label class="label">Status</label><select name="status" id="loan-edit-status" class="input"><% ['active','cleared','cancelled'].forEach(function(s){ %><option value="<%= s %>"><%= s %></option><% }) %></select></div>
+        <div><label class="label">Principal *</label><input type="number" step="0.01" name="principal" id="loan-edit-principal" class="input" required /></div>
+        <div><label class="label">Installment *</label><input type="number" step="0.01" name="installmentAmount" id="loan-edit-installment" class="input" required /></div>
+      </div>
+      <div><label class="label">Description</label><textarea name="description" id="loan-edit-description" class="input" rows="2"></textarea></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button class="btn-primary">Update</button></div>
+    </form>
+  </div>
+</div>

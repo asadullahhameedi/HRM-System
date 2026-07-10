@@ -1,0 +1,19 @@
+<% function renderMessages(messages, type, icon, cls) {
+  if (!messages || !messages.length) return '';
+  return messages.map(function(m) {
+    return '<div class="' + cls + ' flex items-start gap-3 p-3.5 rounded-xl shadow-lg animate-slide-in-left">' +
+      '<i class="fa-solid ' + icon + ' mt-0.5 shrink-0"></i>' +
+      '<div class="text-sm flex-1 leading-relaxed">' + m + '</div>' +
+      '<button type="button" class="alert-close text-current opacity-50 hover:opacity-100 transition-opacity shrink-0"><i class="fa-solid fa-xmark"></i></button>' +
+      '</div>';
+  }).join('');
+} %>
+
+<div class="space-y-2 fixed top-4 right-4 z-50 w-full max-w-sm" id="flash-container">
+  <% if (flash) { %>
+    <%- renderMessages(flash.success, 'success', 'fa-circle-check', 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20') %>
+    <%- renderMessages(flash.error, 'error', 'fa-circle-exclamation', 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20') %>
+    <%- renderMessages(flash.warning, 'warning', 'fa-triangle-exclamation', 'bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20') %>
+    <%- renderMessages(flash.info, 'info', 'fa-circle-info', 'bg-sky-50 text-sky-800 border border-sky-200 dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/20') %>
+  <% } %>
+</div>

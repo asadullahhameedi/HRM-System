@@ -1,0 +1,94 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+          <a href="/dashboard" class="hover:text-brand-600">Dashboard</a>
+          <i class="fa-solid fa-chevron-right text-[8px]"></i>
+          <span class="text-slate-700 dark:text-slate-300 font-medium">Departments</span>
+        </div>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Departments</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400"><%= pagination.total %> total departments</p>
+      </div>
+      <div class="flex gap-2 no-print">
+        <button onclick="HRM_Print.printPage()" class="btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</button>
+        <% if (['admin','hr'].indexOf(user.role) !== -1) { %>
+          <button class="btn-primary btn-sm" data-modal-open="dept-modal" data-modal-title="Add Department"><i class="fa-solid fa-plus"></i> Add Department</button>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% if (departments.length) { %>
+        <% departments.forEach(function(d) { %>
+          <div class="card group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+            <div class="card-body">
+              <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-building"></i></div>
+                  <div>
+                    <h3 class="font-semibold text-slate-800 dark:text-slate-100"><%= d.name %></h3>
+                    <span class="text-xs text-slate-500 font-mono"><%= d.code %></span>
+                  </div>
+                </div>
+                <span class="<%= d.status==='active'?'badge-success':'badge-muted' %> capitalize">
+                  <span class="status-dot bg-current opacity-60"></span>
+                  <%= d.status %>
+                </span>
+              </div>
+              <p class="text-sm text-slate-500 mt-3 line-clamp-2 min-h-[40px]"><%= d.description || 'No description provided.' %></p>
+              <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div class="text-sm flex items-center gap-1.5"><i class="fa-solid fa-users text-slate-400 text-xs"></i><span class="font-semibold text-slate-800 dark:text-slate-100"><%= d.employeeCount %></span> <span class="text-slate-500">employees</span></div>
+                <div class="flex gap-1">
+                  <% if (['admin','hr'].indexOf(user.role) !== -1) { %>
+                    <button class="btn-icon btn-ghost btn-sm" data-modal-open="dept-modal" data-modal-title="Edit Department" data-modal-id="<%= d._id %>" data-modal-name="<%= d.name %>" data-modal-code="<%= d.code %>" data-modal-description="<%= d.description || '' %>" data-modal-status="<%= d.status %>"><i class="fa-solid fa-pen"></i></button>
+                  <% } %>
+                  <% if (user.role === 'admin') { %>
+                    <button class="btn-icon btn-ghost btn-sm text-rose-600" data-confirm="Delete department '<%= d.name %>'?" data-confirm-action="/departments/<%= d._id %>?_method=DELETE" data-confirm-method="POST"><i class="fa-solid fa-trash"></i></button>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="card col-span-full">
+          <div class="text-center py-20">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fa-solid fa-building-circle-exclamation text-2xl text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300">No departments yet</h3>
+            <p class="text-sm text-slate-400 mt-1">Create your first department to get started.</p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <%- include('../partials/pagination', { pagination, query: filters }) %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/confirm-modal') %>
+
+<!-- Department modal -->
+<div id="dept-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4" id="dept-modal-title">Add Department</h3>
+    <form id="dept-form" method="post" action="/departments" class="space-y-3">
+      <input type="hidden" name="_method" id="dept-method" value="POST" />
+      <input type="hidden" name="id" id="dept-id" />
+      <div><label class="label">Name *</label><input name="name" id="dept-name" class="input" required /></div>
+      <div><label class="label">Code *</label><input name="code" id="dept-code" class="input" required /></div>
+      <div><label class="label">Description</label><textarea name="description" id="dept-description" class="input" rows="2"></textarea></div>
+      <div><label class="label">Status</label><select name="status" id="dept-status" class="input"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button type="submit" class="btn-primary">Save</button></div>
+    </form>
+  </div>
+</div>

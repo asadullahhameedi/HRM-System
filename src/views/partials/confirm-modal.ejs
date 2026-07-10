@@ -1,0 +1,20 @@
+<!-- Confirm modal. Usage: pass title, message, action (form action), method, confirmText -->
+<div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-scale-in">
+    <div class="flex items-start gap-4">
+      <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-triangle-exclamation text-rose-600 dark:text-rose-400 text-lg"></i>
+      </div>
+      <div class="flex-1 pt-0.5">
+        <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100" id="confirm-title">Are you sure?</h3>
+        <p class="mt-1.5 text-sm text-slate-500 dark:text-slate-400 leading-relaxed" id="confirm-message">This action cannot be undone.</p>
+      </div>
+    </div>
+    <form id="confirm-form" method="post" action="" class="mt-6 flex justify-end gap-2">
+      <input type="hidden" name="_method" id="confirm-method" value="DELETE" />
+      <button type="button" class="btn-secondary" data-modal-close>Cancel</button>
+      <button type="submit" class="btn-danger" id="confirm-submit">Delete</button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,85 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+          <a href="/dashboard" class="hover:text-brand-600">Dashboard</a>
+          <i class="fa-solid fa-chevron-right text-[8px]"></i>
+          <span class="text-slate-700 dark:text-slate-300 font-medium">Designations</span>
+        </div>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Designations</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400"><%= pagination.total %> total designations</p>
+      </div>
+      <div class="flex gap-2 no-print">
+        <button onclick="HRM_Print.printPage()" class="btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</button>
+        <% if (['admin','hr'].indexOf(user.role) !== -1) { %>
+          <button class="btn-primary btn-sm" data-modal-open="desig-modal" data-modal-title="Add Designation"><i class="fa-solid fa-plus"></i> Add Designation</button>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <% if (designations.length) { %>
+          <table class="table-clean">
+            <thead><tr><th>Designation</th><th>Department</th><th>Status</th><th>Created</th><th class="text-right">Actions</th></tr></thead>
+            <tbody>
+              <% designations.forEach(function(d) { %>
+                <tr>
+                  <td><div class="font-medium"><%= d.name %></div><div class="text-xs text-slate-500"><%= d.description || '' %></div></td>
+                  <td><%= d.department ? d.department.name : '<span class="text-slate-400">—</span>' %></td>
+                  <td><span class="<%= d.status==='active'?'badge-success':'badge-muted' %> capitalize"><%= d.status %></span></td>
+                  <td class="text-slate-500 text-sm"><%= new Date(d.createdAt).toLocaleDateString() %></td>
+                  <td class="text-right">
+                    <% if (['admin','hr'].indexOf(user.role) !== -1) { %>
+                      <button class="btn-icon btn-ghost btn-sm" data-modal-open="desig-modal" data-modal-title="Edit Designation" data-modal-id="<%= d._id %>" data-modal-name="<%= d.name %>" data-modal-department="<%= d.department && d.department._id %>" data-modal-description="<%= d.description || '' %>" data-modal-status="<%= d.status %>"><i class="fa-solid fa-pen"></i></button>
+                    <% } %>
+                    <% if (user.role === 'admin') { %>
+                      <button class="btn-icon btn-ghost btn-sm text-rose-600" data-confirm="Delete designation '<%= d.name %>'?" data-confirm-action="/designations/<%= d._id %>?_method=DELETE" data-confirm-method="POST"><i class="fa-solid fa-trash"></i></button>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="text-center py-20">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fa-solid fa-id-badge text-2xl text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300">No designations yet</h3>
+            <p class="text-sm text-slate-400 mt-1">Add designations to organize roles.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <%- include('../partials/pagination', { pagination, query: filters }) %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/confirm-modal') %>
+
+<div id="desig-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in">
+    <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4" id="desig-modal-title">Add Designation</h3>
+    <form id="desig-form" method="post" action="/designations" class="space-y-3">
+      <input type="hidden" name="_method" id="desig-method" value="POST" />
+      <input type="hidden" name="id" id="desig-id" />
+      <div><label class="label">Name *</label><input name="name" id="desig-name" class="input" required /></div>
+      <div><label class="label">Department</label>
+        <select name="department" id="desig-department" class="input"><option value="">—</option><% departments.forEach(function(d){ %><option value="<%= d._id %>"><%= d.name %></option><% }) %></select>
+      </div>
+      <div><label class="label">Description</label><textarea name="description" id="desig-description" class="input" rows="2"></textarea></div>
+      <div><label class="label">Status</label><select name="status" id="desig-status" class="input"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button type="submit" class="btn-primary">Save</button></div>
+    </form>
+  </div>
+</div>

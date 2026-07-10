@@ -1,0 +1,176 @@
+<div class="space-y-6">
+  <!-- Stats cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 no-print">
+    <% var totalLogs = (typeof total !== 'undefined') ? total : (items ? items.length : 0); %>
+    <% var todayLogs = items ? items.filter(function(l){ var d = new Date(l.createdAt); var t = new Date(); return d.toDateString() === t.toDateString(); }).length : 0; %>
+    <% var failedLogs = items ? items.filter(function(l){ return l.status === 'failed'; }).length : 0; %>
+    <% var successLogs = items ? items.filter(function(l){ return l.status !== 'failed'; }).length : 0; %>
+    <div class="card p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400">
+          <i class="fa-solid fa-database"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= totalLogs %></div>
+          <div class="text-xs text-slate-500">Total Logs</div>
+        </div>
+      </div>
+    </div>
+    <div class="card p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= successLogs %></div>
+          <div class="text-xs text-slate-500">Successful</div>
+        </div>
+      </div>
+    </div>
+    <div class="card p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= failedLogs %></div>
+          <div class="text-xs text-slate-500">Failed</div>
+        </div>
+      </div>
+    </div>
+    <div class="card p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
+          <i class="fa-solid fa-calendar-day"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= todayLogs %></div>
+          <div class="text-xs text-slate-500">Today</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card no-print">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400">
+          <i class="fa-solid fa-filter"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Filter Audit Logs</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Narrow down by module, action, status, or date range</p>
+        </div>
+      </div>
+      <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div>
+          <label class="label">Module</label>
+          <select name="module" class="input">
+            <option value="">All Modules</option>
+            <% ['auth','employee','attendance','leave','payroll','settings','task','document','user'].forEach(function(m){ %>
+              <option value="<%= m %>" <%= filters.module===m?'selected':'' %>><%= m %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Action</label>
+          <input name="action" value="<%= filters.action || '' %>" class="input" placeholder="e.g. payroll.run" />
+        </div>
+        <div>
+          <label class="label">Status</label>
+          <select name="status" class="input">
+            <option value="">All Statuses</option>
+            <option value="success" <%= filters.status==='success'?'selected':'' %>>Success</option>
+            <option value="failed" <%= filters.status==='failed'?'selected':'' %>>Failed</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">From</label>
+          <input type="date" name="from" value="<%= filters.from || '' %>" class="input" />
+        </div>
+        <div>
+          <label class="label">To</label>
+          <input type="date" name="to" value="<%= filters.to || '' %>" class="input" />
+        </div>
+        <div class="sm:col-span-2 lg:col-span-5 flex justify-end gap-2">
+          <a href="/settings/audit" class="btn-secondary"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-filter"></i> Apply Filters</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Audit log table -->
+  <div class="card overflow-hidden">
+    <div class="card-body" style="padding: 0;">
+      <div class="flex items-center gap-3 p-5 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Activity History</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Immutable record of all system actions</p>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <% if (items.length) { %>
+          <table class="table-clean">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Actor</th>
+                <th>Module</th>
+                <th>Action</th>
+                <th>Description</th>
+                <th>IP</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% items.forEach(function(l){ %>
+                <tr>
+                  <td class="text-xs text-slate-500 whitespace-nowrap"><%= new Date(l.createdAt).toLocaleString() %></td>
+                  <td>
+                    <div class="text-sm font-medium text-slate-800 dark:text-slate-100"><%= l.actorName || '—' %></div>
+                    <div class="text-xs text-slate-400 capitalize"><%= l.actorRole || '' %></div>
+                  </td>
+                  <td><span class="badge-muted capitalize"><%= l.module || '—' %></span></td>
+                  <td class="font-mono text-xs text-slate-600 dark:text-slate-300"><%= l.action %></td>
+                  <td class="text-sm text-slate-700 dark:text-slate-200"><%= l.description || '—' %></td>
+                  <td class="text-xs text-slate-400 font-mono"><%= l.ip || '—' %></td>
+                  <td>
+                    <% if (l.status === 'failed') { %>
+                      <span class="badge-danger">Failed</span>
+                    <% } else { %>
+                      <span class="badge-success">Success</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="text-center py-20">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fa-solid fa-shield-halved text-2xl text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300">No audit logs found</h3>
+            <p class="text-sm text-slate-400 mt-1">Try adjusting the filters above.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <div class="flex items-center justify-between text-sm text-slate-500">
+      <div>Page <%= page %> of <%= totalPages %> (<%= total %> total)</div>
+      <div class="flex gap-2">
+        <% if (page > 1) { %><a href="?<%= new URLSearchParams({...filters, page: page-1}).toString() %>" class="btn-secondary btn-sm">Previous</a><% } %>
+        <% if (page < totalPages) { %><a href="?<%= new URLSearchParams({...filters, page: page+1}).toString() %>" class="btn-secondary btn-sm">Next</a><% } %>
+      </div>
+    </div>
+  <% } %>
+</div>

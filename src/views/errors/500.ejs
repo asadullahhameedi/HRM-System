@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= (theme === 'dark') ? 'dark' : '' %>">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>500 · Server Error</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/vendor/@fortawesome/fontawesome-free/css/all.min.css" />
+</head>
+<body class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+  <div class="text-center max-w-md">
+    <div class="text-7xl font-extrabold text-rose-600 mb-2">500</div>
+    <h1 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Something went wrong</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6"><%= message || 'An unexpected error occurred. Please try again later.' %></p>
+    <% if (stack) { %><pre class="text-left text-xs bg-slate-900 text-slate-100 p-3 rounded-lg overflow-auto max-h-48 mb-4"><code><%= stack %></code></pre><% } %>
+    <a href="<%= user ? '/dashboard' : '/login' %>" class="btn-primary"><i class="fa-solid fa-house"></i> Back to Home</a>
+  </div>
+</body>
+</html>

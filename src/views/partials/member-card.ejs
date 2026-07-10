@@ -1,0 +1,90 @@
+<%# Reusable, consistent card for both the Developer and Team Members sections.
+    Both sections use the exact same card, layout, and features.
+
+    Locals: m = {
+      name, initials, role, bio, photo (optional URL), color, accent,
+      featured? (Boolean), skills[], location (optional),
+      socials { github, linkedin, twitter, email, whatsapp, phone }
+    }
+%>
+<div class="card member-card overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 <%= m.featured ? 'ring-2 ring-brand-500/40' : '' %>">
+  <!-- Gradient banner -->
+  <div class="member-banner h-28 bg-gradient-to-r <%= m.color %> relative">
+    <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 25% 50%, white 1px, transparent 1px); background-size: 22px 22px;"></div>
+    <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(circle at 75% 50%, white 1px, transparent 1px); background-size: 18px 18px;"></div>
+    <% if (m.featured) { %>
+      <span class="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[0.65rem] font-semibold text-brand-700 shadow-sm backdrop-blur">
+        <i class="fa-solid fa-star text-amber-500"></i> Lead
+      </span>
+    <% } %>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body -mt-14 text-center">
+    <!-- Avatar (photo if available, otherwise initials) -->
+    <% if (m.photo) { %>
+      <img src="<%= m.photo %>" alt="<%= m.name %>" class="member-avatar inline-flex w-24 h-24 rounded-full object-cover ring-4 ring-white dark:ring-slate-900 shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" />
+      <div class="member-avatar-fallback hidden w-24 h-24 rounded-full bg-gradient-to-br <%= m.color %> text-white text-2xl font-bold items-center justify-center ring-4 ring-white dark:ring-slate-900 shadow-lg">
+        <%= m.initials %>
+      </div>
+    <% } else { %>
+      <div class="member-avatar inline-flex w-24 h-24 rounded-full bg-gradient-to-br <%= m.color %> text-white text-2xl font-bold items-center justify-center ring-4 ring-white dark:ring-slate-900 shadow-lg">
+        <%= m.initials %>
+      </div>
+    <% } %>
+
+    <h3 class="text-lg font-bold mt-3 text-slate-800 dark:text-slate-100"><%= m.name %></h3>
+    <div class="text-sm font-medium text-brand-600 dark:text-brand-400"><%= m.role %></div>
+
+    <% if (m.location) { %>
+      <div class="flex items-center justify-center gap-1 mt-1 text-xs text-slate-400">
+        <i class="fa-solid fa-location-dot"></i> <%= m.location %>
+      </div>
+    <% } %>
+
+    <p class="text-xs text-slate-500 mt-2.5 leading-relaxed"><%= m.bio %></p>
+
+    <!-- Skill chips -->
+    <% if (m.skills && m.skills.length) { %>
+      <div class="flex flex-wrap justify-center gap-1.5 mt-3">
+        <% m.skills.forEach(function(s){ %>
+          <span class="badge bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 text-[0.7rem]"><%= s %></span>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <!-- Socials -->
+    <div class="flex justify-center flex-wrap gap-1 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+      <% if (m.socials && m.socials.github) { %>
+        <a href="<%= m.socials.github %>" target="_blank" rel="noopener" aria-label="GitHub" class="member-social-btn">
+          <i class="fa-brands fa-github"></i>
+        </a>
+      <% } %>
+      <% if (m.socials && m.socials.linkedin) { %>
+        <a href="<%= m.socials.linkedin %>" target="_blank" rel="noopener" aria-label="LinkedIn" class="member-social-btn">
+          <i class="fa-brands fa-linkedin"></i>
+        </a>
+      <% } %>
+      <% if (m.socials && m.socials.twitter) { %>
+        <a href="<%= m.socials.twitter %>" target="_blank" rel="noopener" aria-label="Twitter" class="member-social-btn">
+          <i class="fa-brands fa-x-twitter"></i>
+        </a>
+      <% } %>
+      <% if (m.socials && m.socials.whatsapp) { %>
+        <a href="https://wa.me/<%= m.socials.whatsapp.replace(/[^0-9]/g, '') %>" target="_blank" rel="noopener" aria-label="WhatsApp" class="member-social-btn">
+          <i class="fa-brands fa-whatsapp"></i>
+        </a>
+      <% } %>
+      <% if (m.socials && m.socials.phone) { %>
+        <a href="tel:<%= m.socials.phone %>" aria-label="Phone" class="member-social-btn">
+          <i class="fa-solid fa-phone"></i>
+        </a>
+      <% } %>
+      <% if (m.socials && m.socials.email) { %>
+        <a href="mailto:<%= m.socials.email %>" aria-label="Email" class="member-social-btn">
+          <i class="fa-solid fa-envelope"></i>
+        </a>
+      <% } %>
+    </div>
+  </div>
+</div>

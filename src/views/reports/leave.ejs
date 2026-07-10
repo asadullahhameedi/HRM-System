@@ -1,0 +1,46 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+  <main class="flex-1 p-4 lg:p-6 space-y-5 max-w-6xl">
+    <nav class="text-sm text-slate-500 flex items-center gap-2 no-print"><a href="/reports" class="hover:text-brand-600">Reports</a><i class="fa-solid fa-chevron-right text-xs"></i><span class="text-slate-700 dark:text-slate-300">Leave Report</span></nav>
+    <div><h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Leave Report</h2><p class="text-sm text-slate-500">Leave applications and approvals.</p></div>
+    <%- include('../reports/_filters', { filters, departments, showDateRange: true }) %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="card"><div class="card-body"><h3 class="font-semibold mb-3">By Status</h3><canvas id="status-chart" height="160"></canvas></div></div>
+      <div class="card"><div class="card-body"><h3 class="font-semibold mb-3">By Leave Type</h3><canvas id="type-chart" height="160"></canvas></div></div>
+    </div>
+    <div class="card"><div class="overflow-x-auto">
+      <% if (leaves.length) { %>
+        <table class="table-clean">
+          <thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th class="text-right">Days</th><th>Status</th><th>Reason</th></tr></thead>
+          <tbody>
+            <% leaves.forEach(function(l){ %>
+              <tr>
+                <td><div class="font-medium"><%= l.employee ? l.employee.firstName+' '+l.employee.lastName : '—' %></div><div class="text-xs text-slate-500"><%= l.employee ? l.employee.employeeId : '' %></div></td>
+                <td class="text-xs"><%= l.leaveType ? l.leaveType.name : '—' %></td>
+                <td class="text-xs"><%= new Date(l.fromDate).toLocaleDateString() %></td>
+                <td class="text-xs"><%= new Date(l.toDate).toLocaleDateString() %></td>
+                <td class="text-right"><%= l.days %></td>
+                <td><% var sc={pending:'badge-warning',approved:'badge-success',rejected:'badge-danger'}[l.status]; %><span class="<%= sc %> capitalize text-xs"><%= l.status %></span></td>
+                <td class="text-xs text-slate-500"><%= l.reason || '—' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %><div class="text-center py-12 text-slate-400 text-sm">No leave records in this range.</div><% } %>
+    </div></div>
+  </main>
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  var byStatus = <%- JSON.stringify(byStatus) %>;
+  var byType = <%- JSON.stringify(byType) %>;
+  var sctx = document.getElementById('status-chart');
+  if (sctx && byStatus.length) new Chart(sctx, { type: 'doughnut', data: { labels: byStatus.map(function (s) { return s._id; }), datasets: [{ data: byStatus.map(function (s) { return s.count; }), backgroundColor: ['#f59e0b','#10b981','#ef4444'] }] }, options: { plugins: { legend: { position: 'bottom' } }, cutout: '60%' } });
+  var tctx = document.getElementById('type-chart');
+  if (tctx && byType.length) new Chart(tctx, { type: 'bar', data: { labels: byType.map(function (t) { return t._id; }), datasets: [{ label: 'Days', data: byType.map(function (t) { return t.days; }), backgroundColor: '#164bdc', borderRadius: 6 }] }, options: { plugins: { legend: { display: false } } } });
+})();
+</script>

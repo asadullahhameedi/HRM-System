@@ -1,0 +1,81 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5 max-w-3xl">
+    <nav class="text-sm text-slate-500 flex items-center gap-2">
+      <a href="/tasks" class="hover:text-brand-600">Tasks</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-slate-700 dark:text-slate-300"><%= isEdit ? 'Edit' : 'New' %></span>
+    </nav>
+
+    <form action="<%= isEdit ? '/tasks/' + task._id + '?_method=PUT' : '/tasks' %>" method="post" class="space-y-5">
+      <div class="card">
+        <div class="card-body space-y-4">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100"><i class="fa-solid fa-list-check mr-2 text-brand-600"></i><%= isEdit ? 'Edit Task' : 'New Task' %></h3>
+          <div><label class="label">Title *</label><input name="title" value="<%= task.title || '' %>" class="input" required /></div>
+          <div><label class="label">Description</label><textarea name="description" class="input" rows="4"><%= task.description || '' %></textarea></div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="label">Scope</label>
+              <select name="scope" class="input">
+                <% ['personal','team','department','project'].forEach(function(s){ %><option value="<%= s %>" <%= task.scope===s?'selected':'' %>><%= s %></option><% }) %>
+              </select>
+            </div>
+            <div>
+              <label class="label">Priority</label>
+              <select name="priority" class="input">
+                <% ['low','medium','high','critical'].forEach(function(p){ %><option value="<%= p %>" <%= (task.priority||'medium')===p?'selected':'' %>><%= p %></option><% }) %>
+              </select>
+            </div>
+            <div>
+              <label class="label">Status</label>
+              <select name="status" class="input">
+                <% ['todo','in_progress','review','done','blocked'].forEach(function(s){ %><option value="<%= s %>" <%= (task.status||'todo')===s?'selected':'' %>><%= s %></option><% }) %>
+              </select>
+            </div>
+            <div>
+              <label class="label">Assigned To</label>
+              <select name="assignedTo" class="input">
+                <option value="">— Unassigned —</option>
+                <% users.forEach(function(u){ %><option value="<%= u._id %>" <%= (task.assignedTo && (task.assignedTo._id || task.assignedTo)==u._id)?'selected':'' %>><%= u.name %></option><% }) %>
+              </select>
+            </div>
+            <div>
+              <label class="label">Department</label>
+              <select name="department" class="input">
+                <option value="">— None —</option>
+                <% departments.forEach(function(d){ %><option value="<%= d._id %>" <%= (task.department && (task.department._id || task.department)==d._id)?'selected':'' %>><%= d.name %></option><% }) %>
+              </select>
+            </div>
+            <div>
+              <label class="label">Progress (%)</label>
+              <input type="number" name="progress" min="0" max="100" value="<%= task.progress || 0 %>" class="input" />
+            </div>
+            <div>
+              <label class="label">Start Date</label>
+              <input type="date" name="startDate" value="<%= task.startDate ? new Date(task.startDate).toISOString().slice(0,10) : '' %>" class="input" />
+            </div>
+            <div>
+              <label class="label">Due Date</label>
+              <input type="date" name="dueDate" value="<%= task.dueDate ? new Date(task.dueDate).toISOString().slice(0,10) : '' %>" class="input" />
+            </div>
+            <div>
+              <label class="label">Labels (comma-separated)</label>
+              <input name="labels" value="<%= (task.labels || []).join(', ') %>" class="input" placeholder="e.g. urgent, backend" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <a href="/tasks" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> <%= isEdit ? 'Update' : 'Create' %> Task</button>
+      </div>
+    </form>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>

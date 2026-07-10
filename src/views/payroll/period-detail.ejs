@@ -1,0 +1,149 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <nav class="text-sm text-slate-500 flex items-center gap-2">
+      <a href="/payroll/periods" class="hover:text-brand-600">Periods</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-slate-700 dark:text-slate-300"><%= period.name %></span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <%= period.name %>
+          <% if (period.lockedBy) { %><i class="fa-solid fa-lock text-amber-500" title="Locked"></i><% } %>
+        </h2>
+        <p class="text-sm text-slate-500">
+          <%= new Date(period.startDate).toLocaleDateString() %> → <%= new Date(period.endDate).toLocaleDateString() %>
+          <% if (period.payrollCode) { %> · Code: <span class="font-mono"><%= period.payrollCode %></span><% } %>
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2 no-print">
+        <a href="/payroll/periods/<%= period._id %>/export" class="btn-secondary btn-sm"><i class="fa-solid fa-file-excel"></i> Export</a>
+        <button onclick="HRM_Print.printPage()" class="btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</button>
+        <% if (['admin','hr','finance'].indexOf(user.role) !== -1) { %>
+          <% if (period.status !== 'locked') { %>
+            <% if (['open','processing'].indexOf(period.status) !== -1) { %>
+              <form method="post" action="/payroll/periods/<%= period._id %>/run" class="inline"><button class="btn-primary btn-sm"><i class="fa-solid fa-play"></i> Run Payroll</button></form>
+            <% } %>
+            <% if (period.status==='processing') { %>
+              <form method="post" action="/payroll/periods/<%= period._id %>/status" class="inline"><input type="hidden" name="status" value="approved" /><button class="btn-success btn-sm"><i class="fa-solid fa-check-double"></i> Approve</button></form>
+            <% } %>
+            <% if (period.status==='approved') { %>
+              <form method="post" action="/payroll/periods/<%= period._id %>/status" class="inline"><input type="hidden" name="status" value="paid" /><button class="btn-success btn-sm"><i class="fa-solid fa-money-bill-wave"></i> Mark Paid</button></form>
+            <% } %>
+            <% if (period.status==='paid') { %>
+              <form method="post" action="/payroll/periods/<%= period._id %>/status" class="inline"><input type="hidden" name="status" value="closed" /><button class="btn-secondary btn-sm"><i class="fa-solid fa-check"></i> Close Period</button></form>
+            <% } %>
+            <form method="post" action="/payroll/periods/<%= period._id %>/recalculate" class="inline"><button class="btn-secondary btn-sm" title="Recalculate aggregates from payslips"><i class="fa-solid fa-arrows-rotate"></i> Recalculate</button></form>
+            <form method="post" action="/payroll/periods/<%= period._id %>/lock" class="inline"><button class="btn-secondary btn-sm text-amber-600" title="Lock period (no further edits)"><i class="fa-solid fa-lock"></i> Lock</button></form>
+          <% } else if (user.role === 'admin') { %>
+            <form method="post" action="/payroll/periods/<%= period._id %>/unlock" class="inline"><button class="btn-danger btn-sm" title="Unlock (admin only)"><i class="fa-solid fa-lock-open"></i> Unlock</button></form>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- KPI cards (period-scoped) -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div class="card p-4">
+        <div class="text-xs text-slate-500 uppercase tracking-wider">Status</div>
+        <% var sc = { open:'badge-muted', processing:'badge-warning', approved:'badge-info', paid:'badge-success', closed:'badge-muted', locked:'badge-danger' }[period.status]; %>
+        <div class="mt-2"><span class="<%= sc %> capitalize"><%= period.status %></span></div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-500 uppercase tracking-wider">Employees</div>
+        <div class="text-lg font-semibold mt-1"><%= period.processedEmployees || 0 %> / <%= period.totalEmployees || 0 %></div>
+        <div class="text-xs text-slate-400"><%= period.completionPercentage || 0 %>% processed</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-500 uppercase tracking-wider">Gross Salary</div>
+        <div class="text-lg font-semibold mt-1"><%= currencySymbol %><%= Number(period.grossSalary || 0).toLocaleString() %></div>
+        <div class="text-xs text-slate-400">basic only</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-500 uppercase tracking-wider">Total Earnings</div>
+        <div class="text-lg font-semibold mt-1"><%= currencySymbol %><%= Number(period.totalEarnings || 0).toLocaleString() %></div>
+        <div class="text-xs text-slate-400">gross earnings</div>
+      </div>
+      <div class="card p-4 bg-brand-600 text-white">
+        <div class="text-xs uppercase tracking-wider opacity-80">Net Payroll</div>
+        <div class="text-lg font-semibold mt-1"><%= currencySymbol %><%= Number(period.netPayroll || 0).toLocaleString() %></div>
+        <div class="text-xs opacity-80">take-home total</div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="card">
+      <div class="card-body">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-semibold text-sm">Payroll Progress</h3>
+          <span class="text-xs text-slate-500"><%= period.processingStatus || 'not_started' %></span>
+        </div>
+        <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div class="h-full <%= (period.completionPercentage || 0) === 100 ? 'bg-emerald-500' : 'bg-brand-500' %>" style="width:<%= period.completionPercentage || 0 %>%"></div>
+        </div>
+        <div class="text-xs text-slate-500 mt-2"><%= period.completionPercentage || 0 %>% complete · <%= period.processedEmployees || 0 %> of <%= period.totalEmployees || 0 %> employees processed</div>
+      </div>
+    </div>
+
+    <!-- Generate single payslip -->
+    <% if (['admin','hr','finance'].indexOf(user.role) !== -1 && ['open','processing'].indexOf(period.status) !== -1 && employees.length) { %>
+    <div class="card">
+      <div class="card-body">
+        <h3 class="font-semibold mb-3"><i class="fa-solid fa-file-invoice mr-2 text-brand-600"></i>Generate Single Payslip</h3>
+        <form method="post" action="/payroll/periods/<%= period._id %>/generate" class="flex flex-wrap items-end gap-3">
+          <div class="flex-1 min-w-[200px]">
+            <label class="label">Employee</label>
+            <select name="employee" class="input" required>
+              <option value="">Select employee</option>
+              <% employees.forEach(function(e){ %><option value="<%= e._id %>"><%= e.employeeId %> · <%= e.firstName %> <%= e.lastName %></option><% }) %>
+            </select>
+          </div>
+          <button class="btn-primary"><i class="fa-solid fa-file-invoice"></i> Generate</button>
+        </form>
+        <p class="help-text">Only employees with an active salary structure can have payslips generated. Employees already processed this period are excluded.</p>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Payslips table -->
+    <div class="card">
+      <div class="overflow-x-auto">
+        <% if (payslips.length) { %>
+          <table class="table-clean">
+            <thead><tr><th>Payslip No</th><th>Employee</th><th class="text-right">Gross</th><th class="text-right">Deductions</th><th class="text-right">Net</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+            <tbody>
+              <% payslips.forEach(function(p) { %>
+                <tr>
+                  <td class="font-mono text-sm"><%= p.payslipNo %></td>
+                  <td><div class="font-medium"><%= p.employee ? p.employee.firstName+' '+p.employee.lastName : '—' %></div><div class="text-xs text-slate-500"><%= p.employee ? p.employee.employeeId : '' %></div></td>
+                  <td class="text-right"><%= currencySymbol %><%= Number(p.grossEarnings).toLocaleString() %></td>
+                  <td class="text-right text-rose-600"><%= currencySymbol %><%= Number(p.totalDeductions).toLocaleString() %></td>
+                  <td class="text-right font-semibold"><%= currencySymbol %><%= Number(p.netPay).toLocaleString() %></td>
+                  <td><% var sc2 = { draft:'badge-muted', pending:'badge-warning', approved:'badge-info', paid:'badge-success', cancelled:'badge-danger' }[p.status]; %><span class="<%= sc2 %> capitalize"><%= p.status %></span></td>
+                  <td class="text-right whitespace-nowrap">
+                    <a href="/payroll/payslips/<%= p._id %>" class="btn-icon btn-ghost btn-sm"><i class="fa-solid fa-eye"></i></a>
+                    <a href="/payroll/payslips/<%= p._id %>/pdf" class="btn-icon btn-ghost btn-sm" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="text-center py-16"><i class="fa-solid fa-file-circle-exclamation text-4xl text-slate-300 mb-3 block"></i><h3 class="font-medium text-slate-600 dark:text-slate-300">No payslips yet</h3><p class="text-sm text-slate-400 mt-1">Run payroll to generate payslips for all employees.</p></div>
+        <% } %>
+      </div>
+    </div>
+
+    <% if (period.remarks) { %>
+    <div class="card"><div class="card-body"><h3 class="font-semibold mb-2 text-sm">Remarks</h3><p class="text-sm text-slate-600 dark:text-slate-300"><%= period.remarks %></p></div></div>
+    <% } %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>

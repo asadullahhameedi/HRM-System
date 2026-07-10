@@ -1,0 +1,125 @@
+<% sidebarItem = function(path, icon, label, roles, badge) {
+  if (roles && (!user || roles.indexOf(user.role) === -1)) return '';
+  var active = currentPath === path || currentPath.indexOf(path + '/') === 0;
+  return '<a href="' + path + '" class="sidebar-link ' + (active ? 'active' : '') + '" title="' + label + '" aria-label="' + label + '" data-nav-label="' + label.toLowerCase() + '" data-nav-path="' + path + '" data-nav-icon="' + icon + '" data-nav-label-text="' + label + '"' + (badge ? ' data-nav-badge="' + badge + '"' : '') + '>' +
+    '<i class="fa-solid fa-' + icon + ' sidebar-link-icon"></i>' +
+    '<span class="sidebar-label">' + label + '</span>' +
+    (badge ? '<span class="sidebar-link-badge">' + badge + '</span>' : '') +
+    '<button type="button" class="sidebar-module-pin" data-pin-path="' + path + '" data-pin-icon="' + icon + '" data-pin-label="' + label + '" title="Pin to top" aria-label="Pin ' + label + ' to top" tabindex="-1">' +
+      '<i class="fa-solid fa-thumbtack"></i>' +
+    '</button>' +
+    '<span class="sidebar-tooltip">' + label + '</span>' +
+    '</a>';
+}; %>
+
+<aside id="sidebar"
+  class="sidebar no-print fixed inset-y-0 left-0 z-40 text-white flex flex-col"
+  role="navigation"
+  aria-label="Primary navigation">
+
+  <!-- ============ TOP SECTION: Brand ============ -->
+  <div class="sidebar-brand h-16 flex items-center gap-2.5 px-3 border-b border-white/5 shrink-0 relative z-10">
+    <a href="/dashboard" class="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-90 transition-opacity">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0 shadow-lg shadow-brand-900/50 ring-1 ring-white/10">
+        <i class="fa-solid fa-users-gear text-white text-lg"></i>
+      </div>
+      <div class="sidebar-brand-text min-w-0 overflow-hidden flex-1">
+        <div class="font-bold leading-tight truncate text-white text-sm"><%= appName %></div>
+        <div class="text-[10px] uppercase tracking-widest text-slate-400">Enterprise HRM</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- ============ MIDDLE SECTION: Navigation ============ -->
+  <nav class="flex-1 overflow-y-auto overflow-x-hidden py-2 sidebar-nav" id="sidebar-nav">
+
+    <!-- Pinned section (dynamically populated by JS from localStorage) -->
+    <div id="sidebar-pinned-section" class="hidden">
+      <div class="sidebar-section-heading sidebar-pinned-heading">
+        <span><i class="fa-solid fa-thumbtack text-[9px] mr-1"></i>Pinned</span>
+      </div>
+      <div class="space-y-0.5 px-2" id="sidebar-pinned-list">
+        <!-- Pinned items injected here by app.js -->
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="sidebar-section-heading">Main</div>
+    <div class="space-y-0.5 px-2">
+      <%- sidebarItem('/dashboard', 'gauge-high', 'Dashboard') %>
+    </div>
+
+    <!-- HR Management -->
+    <div class="sidebar-section-heading">HR Management</div>
+    <div class="space-y-0.5 px-2">
+      <%- sidebarItem('/employees', 'users', 'Employees') %>
+      <%- sidebarItem('/departments', 'sitemap', 'Departments') %>
+      <%- sidebarItem('/designations', 'id-card-clip', 'Designations') %>
+      <%- sidebarItem('/attendance', 'fingerprint', 'Attendance') %>
+      <%- sidebarItem('/leave', 'calendar-check', 'Leave', null, (typeof overview !== 'undefined' && overview && overview.pendingLeaves ? overview.pendingLeaves : '')) %>
+      <%- sidebarItem('/holidays', 'calendar-star', 'Holidays') %>
+    </div>
+
+    <!-- Productivity -->
+    <div class="sidebar-section-heading">Productivity</div>
+    <div class="space-y-0.5 px-2">
+      <%- sidebarItem('/tasks', 'list-check', 'Tasks') %>
+      <%- sidebarItem('/documents', 'folder-open', 'Documents') %>
+    </div>
+
+    <!-- Payroll & Finance -->
+    <div class="sidebar-section-heading">Payroll &amp; Finance</div>
+    <div class="space-y-0.5 px-2">
+      <%- sidebarItem('/payroll/periods', 'calendar-days', 'Periods') %>
+      <%- sidebarItem('/payroll/payslips', 'file-invoice-dollar', 'Payslips') %>
+      <%- sidebarItem('/payroll/structures', 'sliders', 'Salary') %>
+      <%- sidebarItem('/payroll/loans', 'hand-holding-dollar', 'Loans & Advances') %>
+    </div>
+
+    <!-- Analytics -->
+    <div class="sidebar-section-heading">Analytics</div>
+    <div class="space-y-0.5 px-2">
+      <%- sidebarItem('/reports', 'chart-line', 'Reports') %>
+    </div>
+
+    <!-- System -->
+    <div class="sidebar-section-heading">System</div>
+    <div class="space-y-0.5 px-2">
+      <%- sidebarItem('/users', 'user-shield', 'User Management', ['admin']) %>
+      <%- sidebarItem('/settings', 'gear', 'Settings', ['admin']) %>
+      <%- sidebarItem('/about', 'circle-info', 'About') %>
+    </div>
+  </nav>
+
+  <!-- ============ BOTTOM SECTION: User Profile + Logout ============ -->
+
+  <!-- User Profile Card (separate from logout) -->
+  <div class="px-2.5 pt-2 border-t border-white/5 shrink-0">
+    <a href="/profile" id="sidebar-user-btn" class="sidebar-user-btn w-full flex items-center gap-3 rounded-xl bg-slate-800/40 hover:bg-slate-800 p-2.5 transition-all duration-200 hover:shadow-lg" title="My Profile">
+      <% if (user && user.avatar) { %>
+        <img src="<%= user.avatar %>" class="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-brand-500/50" alt="Avatar" />
+      <% } else { %>
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-sm font-bold uppercase shrink-0 ring-2 ring-brand-500/50">
+          <%= (user && (user.name || user.email)) ? (user.name || user.email).charAt(0) : '?' %>
+        </div>
+      <% } %>
+      <div class="sidebar-user-info min-w-0 flex-1 overflow-hidden text-left">
+        <div class="text-sm font-semibold truncate text-white"><%= user && user.name ? user.name : (user && user.email) %></div>
+        <div class="text-xs text-slate-400 capitalize truncate"><%= user && user.role %></div>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-500 text-xs sidebar-user-info"></i>
+    </a>
+  </div>
+
+  <!-- Standalone Logout Button (completely separate from profile) -->
+  <div class="px-2.5 py-2.5 shrink-0">
+    <a href="/logout" class="sidebar-logout" title="Logout" aria-label="Logout">
+      <i class="fa-solid fa-right-from-bracket sidebar-link-icon"></i>
+      <span class="sidebar-label">Logout</span>
+      <span class="sidebar-tooltip">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- Mobile / drawer backdrop -->
+<div id="sidebar-overlay" class="sidebar-overlay no-print fixed inset-0 z-30 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300" aria-hidden="true"></div>

@@ -1,0 +1,133 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <nav class="text-sm text-slate-500 flex items-center gap-2">
+      <a href="/documents" class="hover:text-brand-600">Documents</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-slate-700 dark:text-slate-300 truncate"><%= doc.title %></span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <!-- Main column -->
+      <div class="lg:col-span-2 space-y-5">
+        <div class="card">
+          <div class="card-body">
+            <div class="flex items-start gap-4">
+              <% var typeMeta = docTypes.find(function(t){ return t.value === doc.type; }) || { icon: 'fa-file', label: doc.type }; %>
+              <div class="w-14 h-14 rounded-2xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center shrink-0">
+                <i class="fa-solid <%= typeMeta.icon %> text-brand-600 text-2xl"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100"><%= doc.title %></h2>
+                <div class="text-sm text-slate-500 mt-1"><%= doc.docNumber %></div>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <span class="badge-info"><%= typeMeta.label %></span>
+                  <% var sc = {draft:'badge-muted', pending:'badge-warning', approved:'badge-success', rejected:'badge-danger', archived:'badge-muted', expired:'badge-danger'}[doc.status]; %>
+                  <span class="<%= sc %> capitalize"><%= doc.status %></span>
+                  <span class="badge-muted">v<%= doc.version || 1 %></span>
+                </div>
+              </div>
+            </div>
+
+            <% if (doc.description) { %>
+              <div class="mt-5">
+                <h4 class="text-sm font-semibold text-slate-500 mb-2">Description</h4>
+                <p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap"><%= doc.description %></p>
+              </div>
+            <% } %>
+
+            <% if (doc.fileUrl) { %>
+              <div class="mt-5 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-paperclip text-slate-500"></i>
+                  <div>
+                    <div class="text-sm font-medium"><%= doc.fileName || 'Attached file' %></div>
+                    <div class="text-xs text-slate-500"><%= doc.mimeType %> · <%= (doc.fileSize/1024).toFixed(1) %> KB</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <a href="/documents/<%= doc._id %>/download" class="btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Download</a>
+                  <a href="<%= doc.fileUrl %>" target="_blank" class="btn-ghost btn-sm" title="Open in new tab"><i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (doc.status === 'rejected' && doc.rejectionReason) { %>
+              <div class="mt-5 p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800">
+                <div class="text-sm font-medium text-rose-700 dark:text-rose-300"><i class="fa-solid fa-circle-exclamation"></i> Rejection Reason</div>
+                <p class="text-sm text-rose-700 dark:text-rose-300 mt-1"><%= doc.rejectionReason %></p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-5">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-3">Details</h3>
+            <dl class="space-y-2 text-sm">
+              <div class="flex justify-between"><dt class="text-slate-500">Employee</dt><dd><%= doc.employee ? (doc.employee.firstName + ' ' + doc.employee.lastName) : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Department</dt><dd><%= doc.department ? doc.department.name : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Category</dt><dd><%= doc.category || '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Issued</dt><dd><%= doc.issuedDate ? new Date(doc.issuedDate).toLocaleDateString() : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Expires</dt><dd><%= doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString() : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Approved By</dt><dd><%= doc.approvedBy ? doc.approvedBy.name : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Approved At</dt><dd><%= doc.approvedAt ? new Date(doc.approvedAt).toLocaleDateString() : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Created By</dt><dd><%= doc.createdBy ? doc.createdBy.name : '—' %></dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <% if (['admin','hr'].indexOf(user.role) !== -1) { %>
+          <div class="card">
+            <div class="card-body">
+              <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-3">Actions</h3>
+              <div class="space-y-2">
+                <a href="/documents/<%= doc._id %>/edit" class="btn-secondary w-full btn-sm"><i class="fa-solid fa-pen"></i> Edit</a>
+                <% if (doc.status !== 'approved') { %>
+                  <form action="/documents/<%= doc._id %>/approve" method="post"><button class="btn-primary w-full btn-sm"><i class="fa-solid fa-check"></i> Approve</button></form>
+                <% } %>
+                <% if (doc.status !== 'rejected' && doc.status !== 'archived') { %>
+                  <button class="btn-danger w-full btn-sm" data-modal-open="reject-modal" data-modal-id="<%= doc._id %>" data-modal-title="<%= doc.title %>"><i class="fa-solid fa-xmark"></i> Reject</button>
+                <% } %>
+                <% if (doc.status !== 'archived') { %>
+                  <form action="/documents/<%= doc._id %>/archive" method="post"><button class="btn-secondary w-full btn-sm" data-confirm="Archive this document?"><i class="fa-solid fa-box-archive"></i> Archive</button></form>
+                <% } %>
+                <button class="btn-ghost w-full btn-sm text-rose-600" data-confirm="Delete this document?" data-confirm-action="/documents/<%= doc._id %>?_method=DELETE" data-confirm-method="POST"><i class="fa-solid fa-trash"></i> Delete</button>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/confirm-modal') %>
+
+<div id="reject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/50" data-modal-close></div>
+  <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold mb-4">Reject Document</h3>
+    <form id="reject-form" method="post" action="" class="space-y-3">
+      <div><label class="label">Reason *</label><textarea name="reason" rows="3" class="input" required></textarea></div>
+      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary" data-modal-close>Cancel</button><button class="btn-danger">Reject</button></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('[data-modal-open="reject-modal"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = btn.getAttribute('data-modal-id');
+      document.getElementById('reject-form').action = '/documents/' + id + '/reject';
+      document.getElementById('reject-modal').classList.remove('hidden');
+    });
+  });
+</script>

@@ -1,0 +1,323 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-6">
+    <!-- Welcome Hero -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-800 p-6 lg:p-8 text-white shadow-xl shadow-brand-900/20">
+      <!-- Decorative blobs -->
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+      <div class="absolute bottom-0 left-1/3 w-48 h-48 bg-brand-400/20 rounded-full translate-y-1/2 blur-2xl"></div>
+      <!-- Grid pattern -->
+      <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+      <div class="relative flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-brand-100 text-xs font-medium mb-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse-soft"></span>
+              <span>System Operational</span>
+            </span>
+            <span class="hidden sm:inline">·</span>
+            <span class="hidden sm:inline"><%= new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+          </div>
+          <h2 class="text-2xl lg:text-3xl font-bold tracking-tight">Welcome back, <%= user.name %></h2>
+          <p class="text-sm text-brand-100 mt-1.5">Here's what's happening across your organization today.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total Employees -->
+      <div class="card p-5 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-11 h-11 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform duration-200">
+            <i class="fa-solid fa-users text-lg"></i>
+          </div>
+          <span class="badge-brand text-[10px]"><i class="fa-solid fa-arrow-up text-[8px]"></i> Active</span>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= overview.totalEmployees %></div>
+        <div class="text-xs text-slate-500 mt-1">
+          <span class="font-medium text-emerald-600 dark:text-emerald-400"><%= overview.activeEmployees %></span> active
+          <span class="text-slate-400">·</span>
+          <span class="font-medium text-brand-600 dark:text-brand-400"><%= overview.newThisMonth %></span> new this month
+        </div>
+      </div>
+
+      <!-- Present Today -->
+      <div class="card p-5 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-200">
+            <i class="fa-solid fa-fingerprint text-lg"></i>
+          </div>
+          <span class="status-dot bg-emerald-500 animate-pulse-soft mt-2"></span>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= overview.presentToday %></div>
+        <div class="text-xs text-slate-500 mt-1">
+          <span class="font-medium">present today</span>
+          <span class="text-slate-400">·</span>
+          <span><%= overview.onLeaveToday %> on leave</span>
+        </div>
+      </div>
+
+      <!-- Pending Leaves -->
+      <div class="card p-5 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform duration-200">
+            <i class="fa-solid fa-hourglass-half text-lg"></i>
+          </div>
+          <% if (overview.pendingLeaves > 0) { %><span class="badge-warning text-[10px] animate-pulse-soft"><%= overview.pendingLeaves %></span><% } %>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= overview.pendingLeaves %></div>
+        <div class="text-xs text-slate-500 mt-1">
+          <a href="/leave" class="hover:text-brand-600 dark:hover:text-brand-400 font-medium">pending leave requests →</a>
+        </div>
+      </div>
+
+      <!-- Payroll Balance -->
+      <div class="card p-5 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-transform duration-200">
+            <i class="fa-solid fa-wallet text-lg"></i>
+          </div>
+          <span class="badge-muted text-[10px]">Net</span>
+        </div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= currencySymbol %><%= Number(financials.balance || 0).toLocaleString() %></div>
+        <div class="text-xs text-slate-500 mt-1">net payroll balance</div>
+      </div>
+    </div>
+
+    <!-- Quick Access -->
+    <div>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-1 h-5 bg-brand-600 rounded-full"></div>
+        <h3 class="font-semibold text-slate-800 dark:text-slate-100">Quick Access</h3>
+      </div>
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-3">
+        <% quickAccess.forEach(function(m) { %>
+          <a href="<%= m.path %>" class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group">
+            <div class="card-body p-3 text-center">
+              <div class="w-10 h-10 rounded-xl bg-<%= m.color %>-50 dark:bg-<%= m.color %>-500/10 flex items-center justify-center mx-auto mb-1.5 group-hover:bg-<%= m.color %>-600 group-hover:text-white transition-all duration-200 group-hover:scale-110 text-<%= m.color %>-600 dark:text-<%= m.color %>-400">
+                <i class="fa-solid fa-<%= m.icon %> text-sm"></i>
+              </div>
+              <div class="text-[11px] font-medium text-slate-700 dark:text-slate-300"><%= m.label %></div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="card lg:col-span-2">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-brand-600"></i> Attendance Trend
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Last 7 days overview</p>
+            </div>
+            <span class="badge-info text-[10px]">Daily</span>
+          </div>
+          <div class="h-64"><canvas id="attendanceChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-1">
+            <i class="fa-solid fa-chart-pie text-brand-600"></i> By Department
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">Employee distribution</p>
+          <div class="h-64"><canvas id="departmentChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payroll + Pending Approvals -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="card lg:col-span-2">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-money-bill-wave text-brand-600"></i> Payroll Trend
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Last 6 months</p>
+            </div>
+            <a href="/payroll/payslips" class="text-xs text-brand-600 hover:underline font-medium">View payslips →</a>
+          </div>
+          <div class="h-64"><canvas id="payrollChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
+            <i class="fa-solid fa-clock text-amber-600"></i> Pending Approvals
+          </h3>
+          <div class="space-y-3">
+            <a href="/leave" class="flex items-center justify-between p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-all duration-200 hover:shadow-md group">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+                  <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-medium text-slate-800 dark:text-slate-100">Leave Requests</div>
+                  <div class="text-xs text-slate-500">Awaiting review</div>
+                </div>
+              </div>
+              <span class="badge-warning"><%= pendingApprovals.leaves %></span>
+            </a>
+            <a href="/tasks" class="flex items-center justify-between p-3.5 rounded-xl bg-sky-50/80 dark:bg-sky-500/10 hover:bg-sky-100 dark:hover:bg-sky-500/15 transition-all duration-200 hover:shadow-md group">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform">
+                  <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-medium text-slate-800 dark:text-slate-100">Tasks in Review</div>
+                  <div class="text-xs text-slate-500">Awaiting completion</div>
+                </div>
+              </div>
+              <span class="badge-info"><%= pendingApprovals.tasks %></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Holidays + Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="card">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-star text-sky-600"></i> Upcoming Holidays
+            </h3>
+            <a href="/holidays" class="text-xs text-brand-600 hover:underline font-medium">View all →</a>
+          </div>
+          <% if (holidays && holidays.length) { %>
+            <ul class="space-y-2">
+              <% holidays.forEach(function(h) { %>
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <div class="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex flex-col items-center justify-center shrink-0 text-rose-600 dark:text-rose-400">
+                    <span class="text-[9px] uppercase font-bold"><%= new Date(h.date).toLocaleString('en',{month:'short'}) %></span>
+                    <span class="text-sm font-bold"><%= new Date(h.date).getDate() %></span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-sm font-medium text-slate-800 dark:text-slate-100 truncate"><%= h.name %></div>
+                    <div class="text-xs text-slate-500 capitalize"><%= h.type %></div>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+          <div class="text-center py-8 text-sm text-slate-400">
+            <i class="fa-regular fa-calendar text-3xl mb-2 block opacity-50"></i>
+            No upcoming holidays
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-brand-600"></i> Recent Activity
+            </h3>
+            <span class="status-dot bg-emerald-500 animate-pulse-soft"></span>
+          </div>
+          <% if (activity && activity.length) { %>
+            <div class="space-y-1 max-h-64 overflow-y-auto pr-1">
+              <% activity.forEach(function(a) { %>
+                <div class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 text-slate-500">
+                    <i class="fa-solid fa-<%= a.module === 'auth' ? 'right-to-bracket' : a.module === 'employee' ? 'users' : a.module === 'payroll' ? 'money-bill-wave' : a.module === 'leave' ? 'calendar-check' : a.module === 'attendance' ? 'fingerprint' : 'circle-info' %> text-xs"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm text-slate-700 dark:text-slate-200"><%= a.description %></div>
+                    <div class="text-xs text-slate-400 mt-0.5"><%= a.actorName || (a.actor && a.actor.name) || 'System' %> · <%= new Date(a.createdAt).toLocaleString() %></div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+          <div class="text-center py-8 text-sm text-slate-400">
+            <i class="fa-solid fa-clock-rotate-left text-3xl mb-2 block opacity-50"></i>
+            No recent activity
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  const attTrend = <%- JSON.stringify(attendanceTrend || []) %>;
+  const headcount = <%- JSON.stringify(headcount || []) %>;
+  const payrollTrend = <%- JSON.stringify(payrollTrend || []) %>;
+  const isDark = document.documentElement.classList.contains('dark');
+  const grid = isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.15)';
+  const tick = isDark ? '#94a3b8' : '#64748b';
+  const cs = '<%= currencySymbol %>';
+
+  // Chart.js global defaults for premium look
+  Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = tick;
+
+  if (attTrend.length) {
+    new Chart(document.getElementById('attendanceChart'), {
+      type: 'line',
+      data: { labels: attTrend.map(a => a._id.slice(5)), datasets: [
+        { label: 'Present', data: attTrend.map(a => a.present), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', tension: 0.4, fill: true, borderWidth: 2.5, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2 },
+        { label: 'Absent', data: attTrend.map(a => a.absent), borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.08)', tension: 0.4, fill: true, borderWidth: 2.5, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: '#f43f5e', pointBorderColor: '#fff', pointBorderWidth: 2 },
+        { label: 'Leave', data: attTrend.map(a => a.leave), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)', tension: 0.4, fill: true, borderWidth: 2.5, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: '#f59e0b', pointBorderColor: '#fff', pointBorderWidth: 2 },
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { color: tick, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: 16 } },
+          tooltip: { backgroundColor: isDark ? '#1e293b' : '#0f172a', titleColor: '#fff', bodyColor: '#fff', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 12, cornerRadius: 8, displayColors: true, usePointStyle: true }
+        },
+        scales: { x: { ticks: { color: tick }, grid: { color: grid, drawBorder: false } }, y: { ticks: { color: tick }, grid: { color: grid, drawBorder: false }, beginAtZero: true } }
+      },
+    });
+  }
+  if (headcount.length) {
+    new Chart(document.getElementById('departmentChart'), {
+      type: 'doughnut',
+      data: { labels: headcount.map(d => d.department), datasets: [{ data: headcount.map(d => d.count), backgroundColor: ['#1d61f2','#10b981','#f59e0b','#f43f5e','#8b5cf6','#06b6d4','#ec4899','#84cc16'], borderWidth: 0, hoverOffset: 8 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '68%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: tick, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, font: { size: 11 }, padding: 12 } },
+          tooltip: { backgroundColor: isDark ? '#1e293b' : '#0f172a', titleColor: '#fff', bodyColor: '#fff', padding: 12, cornerRadius: 8, usePointStyle: true }
+        }
+      },
+    });
+  }
+  if (payrollTrend.length) {
+    new Chart(document.getElementById('payrollChart'), {
+      type: 'bar',
+      data: { labels: payrollTrend.map(p => p.label), datasets: [
+        { label: 'Gross (' + cs + ')', data: payrollTrend.map(p => p.gross), backgroundColor: 'rgba(29,97,242,0.85)', borderRadius: 6, borderSkipped: false, maxBarThickness: 32 },
+        { label: 'Net (' + cs + ')', data: payrollTrend.map(p => p.net), backgroundColor: 'rgba(16,185,129,0.85)', borderRadius: 6, borderSkipped: false, maxBarThickness: 32 },
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: tick, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: 16 } },
+          tooltip: { backgroundColor: isDark ? '#1e293b' : '#0f172a', titleColor: '#fff', bodyColor: '#fff', padding: 12, cornerRadius: 8, callbacks: { label: function(c) { return c.dataset.label + ': ' + cs + Number(c.raw).toLocaleString(); } } }
+        },
+        scales: { x: { ticks: { color: tick }, grid: { display: false } }, y: { ticks: { color: tick, callback: function(v) { return cs + v.toLocaleString(); } }, grid: { color: grid, drawBorder: false }, beginAtZero: true } }
+      },
+    });
+  }
+</script>

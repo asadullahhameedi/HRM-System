@@ -1,0 +1,144 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+          <a href="/dashboard" class="hover:text-brand-600">Dashboard</a>
+          <i class="fa-solid fa-chevron-right text-[8px]"></i>
+          <span class="text-slate-700 dark:text-slate-300 font-medium">Tasks</span>
+        </div>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Tasks</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400"><%= pagination.total %> total <% if (stats.overdue > 0) { %>· <span class="text-rose-600 dark:text-rose-400 font-medium"><%= stats.overdue %> overdue</span><% } %></p>
+      </div>
+      <div class="flex gap-2 no-print">
+        <button onclick="HRM_Print.printPage()" class="btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</button>
+        <a href="/tasks/kanban" class="btn-secondary btn-sm"><i class="fa-solid fa-columns"></i> Board</a>
+        <a href="/tasks/create" class="btn-primary btn-sm"><i class="fa-solid fa-plus"></i> New Task</a>
+      </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-center justify-between mb-2"><span class="text-xs font-medium text-slate-500">Todo</span><div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform"><i class="fa-solid fa-list-check text-xs"></i></div></div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= stats.todo %></div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-center justify-between mb-2"><span class="text-xs font-medium text-slate-500">In Progress</span><div class="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center text-sky-500 group-hover:scale-110 transition-transform"><i class="fa-solid fa-spinner text-xs"></i></div></div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= stats.in_progress %></div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-center justify-between mb-2"><span class="text-xs font-medium text-slate-500">Review</span><div class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform"><i class="fa-solid fa-magnifying-glass text-xs"></i></div></div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= stats.review %></div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-center justify-between mb-2"><span class="text-xs font-medium text-slate-500">Done</span><div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform"><i class="fa-solid fa-circle-check text-xs"></i></div></div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= stats.done %></div>
+      </div>
+      <div class="card p-4 group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+        <div class="flex items-center justify-between mb-2"><span class="text-xs font-medium text-slate-500">Blocked</span><div class="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform"><i class="fa-solid fa-ban text-xs"></i></div></div>
+        <div class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= stats.blocked %></div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div class="lg:col-span-2">
+          <label class="label">Search</label>
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+            <input type="text" name="search" value="<%= filters.search || '' %>" class="input pl-10" placeholder="Title, description..." />
+          </div>
+        </div>
+        <div>
+          <label class="label">Status</label>
+          <select name="status" class="input">
+            <option value="">All Statuses</option>
+            <% ['todo','in_progress','review','done','blocked'].forEach(function(s){ %><option value="<%= s %>" <%= filters.status==s?'selected':'' %>><%= s %></option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="label">Priority</label>
+          <select name="priority" class="input">
+            <option value="">All Priorities</option>
+            <% ['low','medium','high','critical'].forEach(function(p){ %><option value="<%= p %>" <%= filters.priority==p?'selected':'' %>><%= p %></option><% }) %>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button type="submit" class="btn-primary flex-1"><i class="fa-solid fa-filter"></i> Apply</button>
+          <a href="/tasks" class="btn-secondary" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Table -->
+    <div class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <% if (tasks.length) { %>
+          <table class="table-clean">
+            <thead><tr><th>Title</th><th>Priority</th><th>Status</th><th>Assigned To</th><th>Due Date</th><th>Progress</th><th class="text-right">Actions</th></tr></thead>
+            <tbody>
+              <% tasks.forEach(function(t) { %>
+                <tr>
+                  <td>
+                    <a href="/tasks/<%= t._id %>" class="font-medium text-slate-800 dark:text-slate-100 hover:text-brand-600"><%= t.title %></a>
+                    <% if (t.labels && t.labels.length) { %>
+                      <div class="flex flex-wrap gap-1 mt-1">
+                        <% t.labels.forEach(function(l){ %><span class="badge-muted text-[10px]"><%= l %></span><% }) %>
+                      </div>
+                    <% } %>
+                  </td>
+                  <td><% var pc = {low:'badge-muted', medium:'badge-info', high:'badge-warning', critical:'badge-danger'}[t.priority]; %><span class="<%= pc %> capitalize"><%= t.priority %></span></td>
+                  <td><% var sc = {todo:'badge-muted', in_progress:'badge-info', review:'badge-warning', done:'badge-success', blocked:'badge-danger'}[t.status]; %><span class="<%= sc %> capitalize"><%= t.status.replace('_',' ') %></span></td>
+                  <td>
+                    <% if (t.assignedTo) { %>
+                      <div class="flex items-center gap-2">
+                        <% if (t.assignedTo.avatar) { %>
+                          <img src="<%= t.assignedTo.avatar %>" class="w-7 h-7 rounded-full object-cover" alt="Avatar" />
+                        <% } else { %>
+                          <div class="w-7 h-7 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px] font-semibold uppercase"><%= (t.assignedTo.name || '?').charAt(0) %></div>
+                        <% } %>
+                        <span class="text-sm"><%= t.assignedTo.name %></span>
+                      </div>
+                    <% } else { %><span class="text-slate-400">—</span><% } %>
+                  </td>
+                  <td class="text-sm"><%= t.dueDate ? new Date(t.dueDate).toLocaleDateString() : '—' %></td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-24 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-brand-500 to-brand-600 rounded-full transition-all" style="width:<%= t.progress || 0 %>%"></div></div>
+                      <span class="text-xs text-slate-500 font-medium"><%= t.progress || 0 %>%</span>
+                    </div>
+                  </td>
+                  <td class="text-right">
+                    <a href="/tasks/<%= t._id %>" class="btn-icon btn-ghost btn-sm" title="View"><i class="fa-solid fa-eye"></i></a>
+                    <a href="/tasks/<%= t._id %>/edit" class="btn-icon btn-ghost btn-sm" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                    <button class="btn-icon btn-ghost btn-sm text-rose-600" data-confirm="Delete task '<%= t.title %>'?" data-confirm-action="/tasks/<%= t._id %>?_method=DELETE" data-confirm-method="POST" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="text-center py-20">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fa-solid fa-list-check text-2xl text-slate-400"></i>
+            </div>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-300">No tasks found</h3>
+            <p class="text-sm text-slate-400 mt-1 mb-4">Create a new task or adjust filters.</p>
+            <a href="/tasks/create" class="btn-primary btn-sm inline-flex"><i class="fa-solid fa-plus"></i> New Task</a>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <%- include('../partials/pagination', { pagination, query: filters }) %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/confirm-modal') %>

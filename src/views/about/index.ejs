@@ -1,0 +1,273 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-10">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-slate-500 flex items-center gap-2">
+      <a href="/dashboard" class="hover:text-brand-600 transition-colors">Dashboard</a>
+      <i class="fa-solid fa-chevron-right text-[0.6rem]"></i>
+      <span class="text-slate-700 dark:text-slate-300 font-medium">About</span>
+    </nav>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-violet-800 text-white shadow-2xl">
+      <!-- decorative grid + glows -->
+      <div class="absolute inset-0 opacity-[0.12]" style="background-image: radial-gradient(circle at 20% 30%, white 1px, transparent 1px), radial-gradient(circle at 80% 70%, white 1px, transparent 1px); background-size: 38px 38px;"></div>
+      <div class="absolute -top-20 -right-16 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+      <div class="absolute -bottom-24 -left-10 h-64 w-64 rounded-full bg-violet-400/20 blur-3xl"></div>
+
+      <div class="relative px-6 py-12 sm:px-10 sm:py-14 text-center">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/15 backdrop-blur-md mb-6 ring-4 ring-white/10 shadow-lg">
+          <i class="fa-solid fa-users-gear text-4xl"></i>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight"><%= appName %></h1>
+        <p class="text-brand-100 mt-4 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
+          A comprehensive platform for managing employees, attendance, leave, payroll, tasks, and analytics — built on a clean, modular MVC architecture.
+        </p>
+
+        <!-- Badges -->
+        <div class="flex flex-wrap justify-center gap-2.5 mt-7">
+          <span class="badge bg-white/15 text-white px-3.5 py-1.5 backdrop-blur-md ring-1 ring-white/20"><i class="fa-solid fa-code-branch mr-1.5"></i> v<%= version %></span>
+          <span class="badge bg-white/15 text-white px-3.5 py-1.5 backdrop-blur-md ring-1 ring-white/20"><i class="fa-solid fa-circle-check mr-1.5 text-emerald-300"></i> Production Ready</span>
+          <span class="badge bg-white/15 text-white px-3.5 py-1.5 backdrop-blur-md ring-1 ring-white/20"><i class="fa-solid fa-shield-halved mr-1.5 text-amber-300"></i> Enterprise Security</span>
+          <span class="badge bg-white/15 text-white px-3.5 py-1.5 backdrop-blur-md ring-1 ring-white/20"><i class="fa-solid fa-scale-balanced mr-1.5 text-rose-300"></i> MIT License</span>
+        </div>
+
+        <!-- Quick stats -->
+        <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
+          <% quickStats.forEach(function(s){ %>
+            <div class="rounded-2xl bg-white/10 backdrop-blur-md px-4 py-3 ring-1 ring-white/15 transition-transform hover:-translate-y-0.5">
+              <div class="text-2xl font-bold"><%= s.value %></div>
+              <div class="text-xs uppercase tracking-wider text-brand-100/80"><%= s.label %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== APPLICATION INFORMATION & KEY FEATURES ==================== -->
+    <section class="about-reveal">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 ring-1 ring-inset ring-brand-500/20">
+          <i class="fa-solid fa-circle-info"></i>
+        </span>
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Application Information &amp; Key Features</h2>
+          <p class="text-xs text-slate-500">Identity, capabilities, and what makes the system tick.</p>
+        </div>
+      </div>
+
+      <!-- App identity card -->
+      <div class="card overflow-hidden mb-6">
+        <div class="grid lg:grid-cols-[1.5fr_1fr]">
+          <div class="card-body flex flex-col justify-center">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 text-white shadow-md">
+                <i class="fa-solid fa-cube text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100"><%= appName %></h3>
+                <p class="text-sm text-slate-500">Enterprise Human Resource Management System</p>
+              </div>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              A modern, modular HR platform combining employee management, attendance, leave, payroll, and analytics
+              into one cohesive experience — secured with role-based access control and immutable audit logging.
+            </p>
+          </div>
+          <div class="border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3 p-5 bg-slate-50/50 dark:bg-slate-900/40">
+            <% appMeta.forEach(function(m){ %>
+              <div class="flex items-center gap-3">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 ring-1 ring-inset ring-slate-200 dark:ring-slate-700">
+                  <i class="fa-solid fa-<%= m.icon %> text-sm"></i>
+                </span>
+                <div class="min-w-0">
+                  <div class="text-[0.7rem] uppercase tracking-wide text-slate-400"><%= m.label %></div>
+                  <div class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate"><%= m.value %></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key features grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <% features.forEach(function(f){ %>
+          <div class="card group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 about-feature-card" data-accent="<%= f.accent %>">
+            <div class="card-body">
+              <div class="feature-icon-wrap mb-3.5 inline-flex items-center justify-center h-11 w-11 rounded-xl ring-1 ring-inset transition-transform duration-300 group-hover:scale-110">
+                <i class="fa-solid fa-<%= f.icon %> text-lg"></i>
+              </div>
+              <h3 class="font-semibold text-sm mb-1.5 text-slate-800 dark:text-slate-100"><%= f.title %></h3>
+              <p class="text-xs text-slate-500 leading-relaxed"><%= f.desc %></p>
+            </div>
+            <div class="feature-accent-bar h-1 w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- ==================== TEAM MEMBERS ==================== -->
+    <section class="about-reveal">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+          <i class="fa-solid fa-users"></i>
+        </span>
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Team Members</h2>
+          <p class="text-xs text-slate-500">The people who design, build, and maintain the system.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <% team.forEach(function(m){ %>
+          <%- include('../partials/member-card', { m: m }) %>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- ==================== TECHNOLOGY STACK ==================== -->
+    <section class="about-reveal">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 ring-1 ring-inset ring-violet-500/20">
+          <i class="fa-solid fa-layer-group"></i>
+        </span>
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Technology Stack</h2>
+          <p class="text-xs text-slate-500">A curated set of tools chosen for reliability and developer experience.</p>
+        </div>
+      </div>
+
+      <!-- Tab filter -->
+      <div class="flex justify-center mb-6">
+        <div class="inline-flex rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shadow-sm" role="tablist">
+          <% techGroups.forEach(function(g, i){ %>
+            <button type="button" class="tech-tab px-4 py-1.5 rounded-full text-sm font-medium transition-all <%= i === 0 ? 'is-active' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200' %>" data-target="<%= g.id %>" role="tab">
+              <i class="fa-solid fa-<%= g.icon %> mr-1.5 text-xs"></i><%= g.label %>
+            </button>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Tab panels -->
+      <% const brandIcons = ['node-js','font-awesome','github','linkedin','whatsapp']; %>
+      <% techGroups.forEach(function(g, i){ %>
+        <div class="tech-panel <%= i === 0 ? '' : 'hidden' %>" data-panel="<%= g.id %>">
+          <p class="text-center text-sm text-slate-500 mb-5"><%= g.desc %></p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <% g.items.forEach(function(t){ %>
+              <div class="card group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+                <div class="card-body flex items-start gap-3.5">
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 ring-1 ring-inset ring-slate-200 dark:ring-slate-700 transition-transform duration-300 group-hover:scale-110">
+                    <i class="fa-<%= brandIcons.indexOf(t.icon) >= 0 ? 'brands' : 'solid' %> fa-<%= t.icon %> <%= t.color %> text-lg"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center justify-between gap-2">
+                      <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate"><%= t.name %></h4>
+                      <span class="shrink-0 badge bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><%= t.version %></span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1"><%= t.desc %></p>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% }) %>
+    </section>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
+
+<style>
+  /* ---- Feature card accent colors ---- */
+  .about-feature-card[data-accent="brand"]   .feature-icon-wrap { background-color: rgb(221 234 255); color: rgb(29 97 242); }
+  .about-feature-card[data-accent="brand"]   .feature-accent-bar { background-color: rgb(29 97 242); }
+  .about-feature-card[data-accent="emerald"] .feature-icon-wrap { background-color: rgb(209 250 229); color: rgb(5 150 105); }
+  .about-feature-card[data-accent="emerald"] .feature-accent-bar { background-color: rgb(16 185 129); }
+  .about-feature-card[data-accent="amber"]   .feature-icon-wrap { background-color: rgb(254 243 199); color: rgb(217 119 6); }
+  .about-feature-card[data-accent="amber"]   .feature-accent-bar { background-color: rgb(245 158 11); }
+  .about-feature-card[data-accent="rose"]    .feature-icon-wrap { background-color: rgb(255 228 230); color: rgb(225 29 72); }
+  .about-feature-card[data-accent="rose"]    .feature-accent-bar { background-color: rgb(244 63 94); }
+  .about-feature-card[data-accent="sky"]     .feature-icon-wrap { background-color: rgb(224 242 254); color: rgb(2 132 199); }
+  .about-feature-card[data-accent="sky"]     .feature-accent-bar { background-color: rgb(14 165 233); }
+  .about-feature-card[data-accent="violet"]  .feature-icon-wrap { background-color: rgb(237 233 254); color: rgb(124 58 237); }
+  .about-feature-card[data-accent="violet"]  .feature-accent-bar { background-color: rgb(139 92 246); }
+  .dark .about-feature-card[data-accent="brand"]   .feature-icon-wrap { background-color: rgba(29,97,242,0.15); color: rgb(141 195 255); }
+  .dark .about-feature-card[data-accent="emerald"] .feature-icon-wrap { background-color: rgba(16,185,129,0.15); color: rgb(110 231 183); }
+  .dark .about-feature-card[data-accent="amber"]   .feature-icon-wrap { background-color: rgba(245,158,11,0.15); color: rgb(253 224 71); }
+  .dark .about-feature-card[data-accent="rose"]    .feature-icon-wrap { background-color: rgba(244,63,94,0.15); color: rgb(253 164 175); }
+  .dark .about-feature-card[data-accent="sky"]     .feature-icon-wrap { background-color: rgba(14,165,233,0.15); color: rgb(125 211 252); }
+  .dark .about-feature-card[data-accent="violet"]  .feature-icon-wrap { background-color: rgba(139,92,246,0.15); color: rgb(196 181 253); }
+
+  /* ---- Tech tab active state ---- */
+  .tech-tab.is-active {
+    background-color: rgb(29 97 242);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  /* ---- Reveal-on-scroll ---- */
+  .about-reveal { opacity: 0; transform: translateY(18px); transition: opacity .5s ease, transform .5s ease; }
+  .about-reveal.is-visible { opacity: 1; transform: none; }
+
+  /* ---- Member card hover ---- */
+  .member-card:hover .member-banner { transform: scale(1.04); }
+  .member-banner { transition: transform .4s ease; }
+  .member-card:hover .member-avatar { transform: translateY(-2px) scale(1.03); }
+  .member-avatar { transition: transform .35s ease; }
+  .member-avatar-fallback { transition: transform .35s ease; }
+  .member-card:hover .member-avatar-fallback { transform: translateY(-2px) scale(1.03); }
+
+  /* ---- Member social buttons ---- */
+  .member-social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    color: #94a3b8;
+    transition: all 0.2s ease;
+  }
+  .member-social-btn:hover {
+    color: rgb(29 97 242);
+    background-color: rgb(239 246 255);
+    transform: translateY(-1px);
+  }
+  .dark .member-social-btn:hover {
+    color: rgb(141 195 255);
+    background-color: rgb(30 41 59);
+  }
+  .member-social-btn i { font-size: 0.875rem; }
+</style>
+<script>
+  (function () {
+    // Tech stack tab filtering
+    var tabs = document.querySelectorAll('.tech-tab');
+    var panels = document.querySelectorAll('.tech-panel');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var target = tab.getAttribute('data-target');
+        tabs.forEach(function (t) { t.classList.remove('is-active'); t.classList.add('text-slate-500'); });
+        tab.classList.add('is-active'); tab.classList.remove('text-slate-500');
+        panels.forEach(function (p) { p.classList.toggle('hidden', p.getAttribute('data-panel') !== target); });
+      });
+    });
+
+    // Reveal on scroll
+    var reveals = document.querySelectorAll('.about-reveal');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+      }, { rootMargin: '-60px' });
+      reveals.forEach(function (r) { io.observe(r); });
+    } else {
+      reveals.forEach(function (r) { r.classList.add('is-visible'); });
+    }
+  })();
+</script>

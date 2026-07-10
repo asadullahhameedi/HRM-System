@@ -1,0 +1,117 @@
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5">
+    <nav class="text-sm text-slate-500 flex items-center gap-2">
+      <a href="/tasks" class="hover:text-brand-600">Tasks</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-slate-700 dark:text-slate-300 truncate"><%= task.title %></span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <!-- Main column -->
+      <div class="lg:col-span-2 space-y-5">
+        <div class="card">
+          <div class="card-body">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100"><%= task.title %></h2>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <% var sc = {todo:'badge-muted', in_progress:'badge-info', review:'badge-warning', done:'badge-success', blocked:'badge-danger'}[task.status]; %>
+                  <span class="<%= sc %> capitalize"><%= task.status.replace('_',' ') %></span>
+                  <% var pc = {low:'badge-muted', medium:'badge-info', high:'badge-warning', critical:'badge-danger'}[task.priority]; %>
+                  <span class="<%= pc %> capitalize"><%= task.priority %></span>
+                  <span class="badge-muted capitalize"><%= task.scope %></span>
+                  <% (task.labels || []).forEach(function(l){ %><span class="badge-info text-[10px]"><%= l %></span><% }) %>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <a href="/tasks/<%= task._id %>/edit" class="btn-secondary btn-sm"><i class="fa-solid fa-pen"></i> Edit</a>
+                <a href="/tasks" class="btn-ghost btn-sm"><i class="fa-solid fa-arrow-left"></i></a>
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <h4 class="text-sm font-semibold text-slate-500 mb-2">Description</h4>
+              <div class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap"><%= task.description || 'No description provided.' %></div>
+            </div>
+
+            <div class="mt-5">
+              <div class="flex items-center justify-between text-sm mb-2"><span class="font-semibold text-slate-500">Progress</span><span><%= task.progress || 0 %>%</span></div>
+              <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-brand-600" style="width:<%= task.progress || 0 %>%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-4"><i class="fa-solid fa-comments mr-2 text-brand-600"></i>Comments</h3>
+            <% if (task.comments && task.comments.length) { %>
+              <ul class="space-y-3 mb-4">
+                <% task.comments.forEach(function(c){ %>
+                  <li class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <% if (c.author && c.author.avatar) { %>
+                      <img src="<%= c.author.avatar %>" class="w-8 h-8 rounded-full object-cover shrink-0" alt="Avatar" />
+                    <% } else { %>
+                      <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-semibold uppercase"><%= (c.author && c.author.name) ? c.author.name.charAt(0) : '?' %></div>
+                    <% } %>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium"><%= c.author?.name || 'Unknown' %></span>
+                        <span class="text-xs text-slate-400"><%= new Date(c.createdAt).toLocaleString() %></span>
+                      </div>
+                      <p class="text-sm text-slate-700 dark:text-slate-200 mt-1 whitespace-pre-wrap"><%= c.text %></p>
+                    </div>
+                  </li>
+                <% }) %>
+              </ul>
+            <% } else { %>
+              <div class="text-center py-6 text-sm text-slate-400 mb-4"><i class="fa-regular fa-comment text-2xl block mb-2"></i>No comments yet.</div>
+            <% } %>
+
+            <form action="/tasks/<%= task._id %>/comments" method="post" class="space-y-2">
+              <label class="label">Add a comment</label>
+              <textarea name="text" rows="2" class="input" required></textarea>
+              <div class="flex justify-end"><button class="btn-primary btn-sm"><i class="fa-solid fa-paper-plane"></i> Post Comment</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-5">
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-3">Details</h3>
+            <dl class="space-y-2 text-sm">
+              <div class="flex justify-between"><dt class="text-slate-500">Assigned To</dt><dd><%= task.assignedTo ? task.assignedTo.name : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Created By</dt><dd><%= task.createdBy ? task.createdBy.name : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Department</dt><dd><%= task.department ? task.department.name : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Start Date</dt><dd><%= task.startDate ? new Date(task.startDate).toLocaleDateString() : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Due Date</dt><dd><%= task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Completed</dt><dd><%= task.completedAt ? new Date(task.completedAt).toLocaleDateString() : '—' %></dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Created</dt><dd><%= new Date(task.createdAt).toLocaleDateString() %></dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-3">Change Status</h3>
+            <form action="/tasks/<%= task._id %>/status" method="post" class="space-y-2">
+              <select name="status" class="input">
+                <% ['todo','in_progress','review','done','blocked'].forEach(function(s){ %><option value="<%= s %>" <%= task.status===s?'selected':'' %>><%= s.replace('_',' ') %></option><% }) %>
+              </select>
+              <button class="btn-primary w-full btn-sm"><i class="fa-solid fa-rotate"></i> Update Status</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>

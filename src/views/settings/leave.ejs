@@ -1,0 +1,75 @@
+<form method="post" action="/settings/leave" class="space-y-6">
+  <!-- Leave Policies -->
+  <div class="card">
+    <div class="card-body">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600 dark:text-brand-400">
+          <i class="fa-solid fa-calendar-check text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">Leave Policies</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Carry forward, encashment, and approval rules</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-brand-400 dark:hover:border-brand-600 transition-all sm:col-span-2">
+          <input type="checkbox" name="carryForwardEnabled" <%= settings.carryForwardEnabled ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-forward text-brand-500"></i> Allow Carry Forward</div>
+            <div class="text-xs text-slate-500">Unused leave carries to next year</div>
+          </div>
+        </label>
+        <div>
+          <label class="label">Max Carry-Forward Days</label>
+          <input type="number" name="maxCarryForward" value="<%= settings.maxCarryForward || 10 %>" class="input" min="0" />
+        </div>
+        <label class="settings-toggle-card flex items-center gap-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4 cursor-pointer hover:border-brand-400 dark:hover:border-brand-600 transition-all sm:col-span-2">
+          <input type="checkbox" name="encashmentEnabled" <%= settings.encashmentEnabled ? 'checked' : '' %> class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 flex items-center gap-1.5"><i class="fa-solid fa-money-bill-wave text-emerald-500"></i> Allow Leave Encashment</div>
+            <div class="text-xs text-slate-500">Convert unused leave to cash</div>
+          </div>
+        </label>
+        <div>
+          <label class="label">Encashment Rate (× basic/day)</label>
+          <input type="number" step="0.01" name="encashmentRate" value="<%= settings.encashmentRate || 1 %>" class="input" min="0" />
+        </div>
+        <div class="sm:col-span-2 lg:col-span-1">
+          <label class="label">Approval Workflow</label>
+          <select name="approvalWorkflow" class="input">
+            <% ['manager','hr','admin'].forEach(function(w){ %>
+              <option value="<%= w %>" <%= settings.approvalWorkflow===w?'selected':'' %>><%= w.charAt(0).toUpperCase()+w.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <!-- Info banner -->
+      <div class="mt-6 p-4 rounded-xl bg-brand-50 dark:bg-brand-500/10 border border-brand-100 dark:border-brand-500/20 flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400 shrink-0">
+          <i class="fa-solid fa-lightbulb text-sm"></i>
+        </div>
+        <div class="flex-1">
+          <div class="text-sm font-medium text-brand-800 dark:text-brand-300">Leave Policy Tips</div>
+          <p class="text-xs text-brand-700 dark:text-brand-400 mt-0.5">Carry forward allows employees to carry unused leave days into the next year. Encashment converts unused leave to cash at the specified rate multiplied by the daily basic salary.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky action bar -->
+  <div class="sticky bottom-4 z-10 no-print">
+    <div class="card shadow-xl">
+      <div class="card-body p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+          <i class="fa-solid fa-circle-info text-brand-500"></i>
+          <span>Leave policies apply to all leave requests.</span>
+        </div>
+        <div class="flex gap-3">
+          <a href="/settings/leave" class="btn-secondary"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

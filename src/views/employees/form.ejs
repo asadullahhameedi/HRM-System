@@ -1,0 +1,99 @@
+
+<div class="flex-1 lg:pl-64 flex flex-col">
+  <%- include('../partials/topbar') %>
+  <%- include('../partials/flash') %>
+
+  <main class="flex-1 p-4 lg:p-6 space-y-5 max-w-5xl">
+    <nav class="text-sm text-slate-500 flex items-center gap-2">
+      <a href="/employees" class="hover:text-brand-600">Employees</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-slate-700 dark:text-slate-300"><%= isEdit ? 'Edit' : 'Add' %></span>
+    </nav>
+
+    <form action="<%= isEdit ? '/employees/' + employee._id + '?_method=PUT' : '/employees' %>" method="post" enctype="multipart/form-data" class="space-y-5">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-4"><i class="fa-solid fa-id-card mr-2 text-brand-600"></i>Personal Information</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div><label class="label">First Name *</label><input name="firstName" value="<%= employee.firstName || '' %>" class="input" required /></div>
+            <div><label class="label">Last Name *</label><input name="lastName" value="<%= employee.lastName || '' %>" class="input" required /></div>
+            <div><label class="label">Email *</label><input type="email" name="email" value="<%= employee.email || '' %>" class="input" required /></div>
+            <div><label class="label">Phone</label><input name="phone" value="<%= employee.phone || '' %>" class="input" /></div>
+            <div><label class="label">Gender</label>
+              <select name="gender" class="input">
+                <option value="">—</option>
+                <% ['male','female','other'].forEach(function(g){ %><option value="<%= g %>" <%= employee.gender===g?'selected':'' %>><%= g %></option><% }) %>
+              </select>
+            </div>
+            <div><label class="label">Date of Birth</label><input type="date" name="dateOfBirth" value="<%= employee.dateOfBirth ? new Date(employee.dateOfBirth).toISOString().slice(0,10) : '' %>" class="input" /></div>
+            <div><label class="label">Marital Status</label>
+              <select name="maritalStatus" class="input">
+                <option value="">—</option>
+                <% ['single','married','divorced','widowed'].forEach(function(g){ %><option value="<%= g %>" <%= employee.maritalStatus===g?'selected':'' %>><%= g %></option><% }) %>
+              </select>
+            </div>
+            <div><label class="label">Nationality</label><input name="nationality" value="<%= employee.nationality || 'Afghan' %>" class="input" /></div>
+            <div><label class="label">Avatar</label><input type="file" name="avatar" accept="image/*" class="input" /></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-4"><i class="fa-solid fa-briefcase mr-2 text-brand-600"></i>Employment</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div><label class="label">Department</label>
+              <select name="department" class="input">
+                <option value="">—</option>
+                <% departments.forEach(function(d){ %><option value="<%= d._id %>" <%= (employee.department && (employee.department._id || employee.department)==d._id) ?'selected':'' %>><%= d.name %></option><% }) %>
+              </select>
+            </div>
+            <div><label class="label">Designation</label>
+              <select name="designation" class="input">
+                <option value="">—</option>
+                <% designations.forEach(function(d){ %><option value="<%= d._id %>" <%= (employee.designation && (employee.designation._id || employee.designation)==d._id) ?'selected':'' %>><%= d.name %></option><% }) %>
+              </select>
+            </div>
+            <div><label class="label">Employment Type</label>
+              <select name="employmentType" class="input">
+                <% ['full-time','part-time','contract','intern'].forEach(function(t){ %><option value="<%= t %>" <%= employee.employmentType===t?'selected':'' %>><%= t %></option><% }) %>
+              </select>
+            </div>
+            <div><label class="label">Join Date</label><input type="date" name="joinDate" value="<%= employee.joinDate ? new Date(employee.joinDate).toISOString().slice(0,10) : '' %>" class="input" /></div>
+            <% if (isEdit) { %>
+            <div><label class="label">Status</label>
+              <select name="status" class="input">
+                <% ['active','inactive','terminated','resigned'].forEach(function(s){ %><option value="<%= s %>" <%= employee.status===s?'selected':'' %>><%= s %></option><% }) %>
+              </select>
+            </div>
+            <div><label class="label">Exit Date</label><input type="date" name="exitDate" value="<%= employee.exitDate ? new Date(employee.exitDate).toISOString().slice(0,10) : '' %>" class="input" /></div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-4"><i class="fa-solid fa-location-dot mr-2 text-brand-600"></i>Contact & Bank</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="lg:col-span-2"><label class="label">Address</label><input name="address" value="<%= employee.address || '' %>" class="input" /></div>
+            <div><label class="label">City</label><input name="city" value="<%= employee.city || '' %>" class="input" /></div>
+            <div><label class="label">Province</label><input name="province" value="<%= employee.province || '' %>" class="input" /></div>
+            <div><label class="label">Emergency Name</label><input name="emergencyName" value="<%= employee.emergencyName || '' %>" class="input" /></div>
+            <div><label class="label">Emergency Phone</label><input name="emergencyPhone" value="<%= employee.emergencyPhone || '' %>" class="input" /></div>
+            <div><label class="label">Bank Name</label><input name="bankName" value="<%= employee.bankName || '' %>" class="input" /></div>
+            <div><label class="label">Bank Account</label><input name="bankAccount" value="<%= employee.bankAccount || '' %>" class="input" /></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <a href="/employees" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> <%= isEdit ? 'Update' : 'Create' %> Employee</button>
+      </div>
+    </form>
+  </main>
+
+  <%- include('../partials/footer') %>
+</div>
+<%- include('../partials/sidebar') %>
